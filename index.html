@@ -168,8 +168,71 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
 #garbWarn{position:fixed;inset:0;pointer-events:none;z-index:74;background:rgba(255,60,0,.18);display:none}
 #garbWarn.flash{display:block;animation:garbFlash .5s ease-out forwards}
 /* Boss mode */
-#bossTopBar{display:none;position:fixed;top:0;left:0;right:0;height:46px;background:linear-gradient(135deg,#0f0005,#100010);border-bottom:1px solid rgba(255,30,60,.4);align-items:center;z-index:63;padding:0 10px;gap:8px;}
-#cardOverlay{position:fixed;inset:0;background:rgba(0,0,0,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:200;padding:16px;}
+	#bossTopBar{display:none;position:fixed;top:0;left:0;right:0;height:46px;background:linear-gradient(135deg,#0f0005,#100010);border-bottom:1px solid rgba(255,30,60,.4);align-items:center;z-index:63;padding:0 10px;gap:8px;}
+	#cardOverlay{position:fixed;inset:0;background:rgba(0,0,0,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:200;padding:16px;}
+	
+	/* BOSS 狀態右移與超大圖佈局 */
+	#gameWrap { position: relative; }
+	#deskR { display: flex; flex-direction: column; gap: 5px; }
+	#deskRBoss {
+	  position: fixed;
+	  right: 20px;
+	  top: 60px;
+	  width: 220px; /* 加寬面板 */
+	  display: none;
+	  flex-direction: column;
+	  gap: 12px;
+	  z-index: 60;
+	  background: rgba(10, 0, 15, 0.6);
+	  padding: 15px;
+	  border-radius: 12px;
+	  border: 1px solid rgba(255, 50, 100, 0.3);
+	  backdrop-filter: blur(10px);
+	}
+	#monsterView {
+	  width: 100%;
+	  height: 200px; /* 加高頭像區域 */
+	  background: radial-gradient(circle, rgba(40,0,60,0.4) 0%, #000 100%);
+	  border: 2px solid rgba(255, 0, 100, 0.4);
+	  border-radius: 15px;
+	  position: relative;
+	  overflow: visible; /* 讓氣場可以溢出 */
+	  margin-bottom: 10px;
+	  box-shadow: 0 0 30px rgba(255, 0, 100, 0.2);
+	}
+	#monsterArt {
+	  font-size: 8rem !important; /* 超大頭像 */
+	  text-shadow: 0 0 50px rgba(255, 0, 50, 0.8);
+	  z-index: 5;
+	}
+	#monsterAura {
+	  position: absolute; inset: -20px;
+	  background: radial-gradient(circle at center, rgba(255,0,50,0.3) 0%, transparent 70%);
+	  filter: blur(15px);
+	  animation: auraPulse 2s ease-in-out infinite;
+	}
+	#bmSkills { font-size: 0.75rem !important; color: #ff99aa !important; }
+	#bmHPNum { font-size: 0.8rem !important; font-weight: bold; }
+	
+	/* 浮誇飛彈與拖尾 */
+	.missile {
+	  width: 16px; height: 16px; border-radius: 50%;
+	  box-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+	  filter: brightness(1.5);
+	}
+	.missile-trail {
+	  width: 8px; height: 8px; border-radius: 50%;
+	  opacity: 0.8;
+	}
+	@keyframes missileSpiral {
+	  0% { transform: scale(1) rotate(0deg); }
+	  100% { transform: scale(1.5) rotate(360deg); }
+	}
+	.missile-glow {
+	  position: fixed; pointer-events: none; z-index: 148;
+	  width: 40px; height: 40px; background: radial-gradient(circle, currentColor 0%, transparent 70%);
+	  opacity: 0.4;
+	}
 .card-choice{width:clamp(86px,25vw,118px);border:2px solid #3a1a2a;background:#0d0012;border-radius:8px;padding:9px 6px;cursor:pointer;transition:border-color .12s,background .12s,transform .1s;text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center;}
 .card-choice:hover{border-color:#a05050;background:#14000a;transform:translateY(-2px)}
 .card-choice.sel{border-color:#ffd700!important;background:#1a1200!important;box-shadow:0 0 14px rgba(255,215,0,.3)}
@@ -189,12 +252,16 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
 #bossSkillFlash{position:fixed;inset:0;pointer-events:none;z-index:80;display:none}
 	#bossSkillFlash.active{display:block;animation:bossFlashAnim .7s ease-out forwards}
 	/* Monster UI */
-		#monsterView{
-		  width:100%;height:150px;background:#000;
-		  border:1px solid #424;border-radius:8px;display:flex;align-items:center;justify-content:center;
-		  position:relative;overflow:hidden;margin-bottom:4px;box-shadow:inset 0 0 30px rgba(255,0,255,0.2);
-		  transition: background 0.5s;
-		}
+	#monsterView{
+			  width:100%;height:150px;background:#000;
+			  border:1px solid #424;border-radius:8px;display:flex;align-items:center;justify-content:center;
+			  position:relative;overflow:hidden;margin-bottom:4px;box-shadow:inset 0 0 30px rgba(255,0,255,0.2);
+			  transition: background 0.5s;
+			}
+/* 讓全黑效果更徹底 */
+#blackoutOverlay {
+  position: fixed; inset: 0; background: #000; z-index: 300; display: none;
+}
 		#monsterAura{
 		  position:absolute;inset:0;
 		  background:radial-gradient(circle at center, rgba(255,0,0,0.2) 0%, transparent 70%);
@@ -488,6 +555,7 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
   <div class="hdt">瞬降</div>
 </div>
 <!-- Game area -->
+<div id="blackoutOverlay"></div>
 <div id="monsterTextOverlay"></div>
     <div id="gameWrap">
       <div id="topMaskOverlay"></div>
@@ -512,41 +580,41 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
   <canvas id="mainCanvas"></canvas>
   <div id="vsEl" style="display:none;color:#ff0;text-shadow:0 0 12px #ff0;font-size:1.1rem;font-weight:bold;align-self:center;flex-shrink:0;padding:0 4px;writing-mode:vertical-lr;letter-spacing:3px">VS</div>
   <canvas id="aiCanvas" style="display:none;border:2px solid rgba(255,255,255,0.45);box-shadow:0 0 18px rgba(160,0,255,.22),0 0 4px rgba(255,255,255,.1);flex-shrink:0;align-self:flex-start"></canvas>
-  <div id="deskR">
-    <div id="deskRNorm" style="display:flex;flex-direction:column;gap:5px;width:100%">
-      <div class="box hud-frame"><div class="lbl">NEXT</div><canvas class="mini-cvs" id="nextD" width="74" height="370"></canvas></div>
-      <div class="box"><div class="lbl">ATK</div><div class="val" id="atkEl">0</div></div>
-      <div class="box" id="modeEl" style="font-size:.52rem;color:#444;text-align:center;line-height:1.9"></div>
-    </div>
-		    <div id="deskRBoss" style="display:none;flex-direction:column;gap:4px;width:100%">
-			      <div id="monsterView">
-			        <div id="monsterAura"></div>
-				        <div id="monsterArt">👹</div>
-			        <div id="monsterHitFlash"></div>
-			      </div>
-	      <div id="bmName" style="font-size:.58rem;color:#f66;text-align:center;font-weight:bold;letter-spacing:1px"></div>
-	      <div id="bmStage" style="font-size:.45rem;color:#888;text-align:center"></div>
-      <div style="padding:0 3px">
-        <div style="height:7px;background:#2a0010;border-radius:3px;overflow:hidden">
-          <div id="bmHPFill" style="height:100%;background:linear-gradient(90deg,#ff1010,#ff6040);border-radius:3px;width:100%;transition:width .25s"></div>
-        </div>
-        <div id="bmHPNum" style="font-size:.43rem;color:#f88;text-align:center;margin-top:1px"></div>
-      </div>
-      <div id="bmTimer" style="font-size:.6rem;color:#fa0;text-align:center;font-weight:bold"></div>
-	      <div id="bmSkills" style="font-size:.41rem;color:#664040;text-align:center;line-height:1.7;border-top:1px solid #2a1020;padding-top:3px"></div>
-		      <div id="cdRingContainer" style="position:relative;width:50px;height:50px;margin:5px auto;pointer-events:none;z-index:1;">
-		        <svg width="50" height="50" viewBox="0 0 50 50">
-		          <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6" />
-		          <circle id="cdRingCircle" cx="25" cy="25" r="20" fill="none" stroke="#fa0" stroke-width="6" 
-		            stroke-dasharray="125.6" stroke-dashoffset="0" stroke-linecap="round"
-		            transform="rotate(-90 25 25)" />
-		        </svg>
+    <div id="deskR">
+	    <div id="deskRNorm" style="display:flex;flex-direction:column;gap:5px;width:100%">
+	      <div class="box hud-frame"><div class="lbl">NEXT</div><canvas class="mini-cvs" id="nextD" width="74" height="370"></canvas></div>
+	      <div class="box"><div class="lbl">ATK</div><div class="val" id="atkEl">0</div></div>
+	      <div class="box" id="modeEl" style="font-size:.52rem;color:#444;text-align:center;line-height:1.9"></div>
+	    </div>
+	  </div>
+	  
+	  <!-- BOSS 狀態面板移至最右側 -->
+	  <div id="deskRBoss">
+		      <div id="monsterView">
+		        <div id="monsterAura"></div>
+			        <div id="monsterArt">👹</div>
+		        <div id="monsterHitFlash"></div>
 		      </div>
-	      <div id="bmDebuff" style="font-size:.41rem;color:#f88;text-align:center;min-height:0.9em;line-height:1.6"></div>
-      <div id="bmCards" style="font-size:.39rem;color:#aaa;text-align:center;line-height:1.6;border-top:1px solid #2a1020;padding-top:2px;min-height:0.9em"></div>
-      <div class="box hud-frame" style="padding:3px"><div class="lbl">NEXT</div><canvas class="mini-cvs" id="nextBossD" width="74" height="198"></canvas></div>
-    </div>
-  </div>
+		      <div id="bmName" style="font-size:1.1rem;color:#f66;text-align:center;font-weight:bold;letter-spacing:1px"></div>
+		      <div id="bmStage" style="font-size:.8rem;color:#888;text-align:center"></div>
+	      <div style="padding:0 3px">
+	        <div style="height:12px;background:#2a0010;border-radius:6px;overflow:hidden;border:1px solid #422">
+	          <div id="bmHPFill" style="height:100%;background:linear-gradient(90deg,#ff1010,#ff6040);border-radius:6px;width:100%;transition:width .25s"></div>
+	        </div>
+	        <div id="bmHPNum" style="font-size:.9rem;color:#f88;text-align:center;margin-top:4px;font-family:monospace"></div>
+	      </div>
+		      <div id="bmSkills" style="font-size:.8rem;color:#ff99aa;text-align:center;line-height:1.5;border-top:1px solid #422;padding-top:8px;margin-top:5px"></div>
+			      <div id="cdRingContainer" style="position:relative;width:60px;height:60px;margin:10px auto;pointer-events:none;z-index:1;">
+			        <svg width="60" height="60" viewBox="0 0 50 50">
+			          <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6" />
+			          <circle id="cdRingCircle" cx="25" cy="25" r="20" fill="none" stroke="#fa0" stroke-width="6" 
+			            stroke-dasharray="125.6" stroke-dashoffset="0" stroke-linecap="round"
+			            transform="rotate(-90 25 25)" />
+			        </svg>
+			      </div>
+		      <div id="bmDebuff" style="font-size:.8rem;color:#f88;text-align:center;min-height:1.2em;line-height:1.6"></div>
+	      <div id="bmCards" style="font-size:.75rem;color:#aaa;text-align:center;line-height:1.6;border-top:1px solid #422;padding-top:5px;min-height:1.2em"></div>
+	  </div>
   <div id="landPanel">
     <div class="box hud-frame"><div class="lbl">HOLD</div><canvas class="mini-cvs" id="holdL" width="84" height="56"></canvas></div>
     <div class="box" style="display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px">
@@ -642,11 +710,10 @@ const BIG_BOSSES=[
   {name:'神滅者',    art:'☯️',color:'#ffffff',desc:'毀滅神明的存在', skills:[0,1,2,3,4],stageIdx:6},
 ];
 const BOSS_BIG_SKILLS=[
-  {name:'鮮血再生',desc:'恢復25% HP'},
-  {name:'魔物大軍',desc:'隨機施放小怪技能'},
-  {name:'黑暗制裁',desc:'畫面變暗並封鎖Hold'},
-  {name:'重力壓制',desc:'方塊加速下降'},
-  {name:'虛空裂縫',desc:'隨機方塊消失'},
+  {name:'鮮血再生',desc:'恢復15% HP'},
+  {name:'黑暗制裁',desc:'畫面全黑1秒並封鎖Hold 2秒'},
+  {name:'重力壓制',desc:'BOSS受傷降低30%持續4秒'},
+  {name:'虛空裂縫',desc:'消除最底下1行方塊'},
 ];
 const CARD_POOL=[
   {id:'clearBonus', icon:'💡',name:'清除加成I',  desc:'+2%消除傷害（可疊加）',stackable:true},
@@ -654,7 +721,7 @@ const CARD_POOL=[
   {id:'tradeHold',  icon:'⚔️',name:'以刀換劍',   desc:'放棄Hold，消除傷害+100%',unique:true},
   {id:'clearBoard', icon:'💥',name:'虛空清場',   desc:'立即清除全場（無分數）',instant:true},
   {id:'revive',     icon:'💎',name:'最後奇蹟',   desc:'死亡自動復活一次',unique:true,minStage:20},
-  {id:'counterLaw', icon:'⚖️',name:'剋制法則',   desc:'小怪傷害-50%，BOSS傷害+10%',stackable:true},
+  {id:'counterLaw', icon:'⚖️',name:'剋制法則',   desc:'小怪傷害-15%，BOSS傷害+10%（限一次）',unique:true},
   {id:'allEnhance', icon:'✨',name:'全能強化',   desc:'消除+10%，T-Spin+15%（限選一次）',unique:true},
   {id:'reroll',     icon:'🎲',name:'命運重塑',   desc:'刷新卡片重選（不佔槽）',instant:true},
   {id:'armorBreak', icon:'💀',name:'破甲之刃',   desc:'所有傷害永久×1.3',stackable:true},
@@ -680,7 +747,8 @@ const bm={
 	  rotSealTimer:0, colorPoisonTimer:0, shakeTimer:0, onlyITimer:0,
 	  comboOnlyTimer:0, rowSealTimer:0, sealedRow:-1, dropSealTimer:0,
 	  autoHealTimer:0, grayScaleTimer:0,
-	  topMaskTimer:0, skeletonVisionTimer:0,
+	  topMaskTimer:0, skeletonVisionTimer:0, dogVisionTimer:0,
+	  bossDmgReduceTimer:0,
 	  hideBlocksTimer:0,
 	  shakeIntervalId:null, shakeIntervalAcc:0,
   transpTimer:0,gravBoostTimer:0,fastLockTimer:0,dasSlowTimer:0,shakeAcc:0,
@@ -832,7 +900,6 @@ function spawnMissile(startX, startY, type, count) {
   const colors = { 1: '#0ff', 2: '#0f0', 3: '#ff0', 4: '#f0f', 'T': '#a0f' };
   const color = colors[type] || '#fff';
 
-  // 發射音效
   osc(150 + count * 20, 'sine', 0, 0.1, 0.1);
 
   for (let i = 0; i < count; i++) {
@@ -843,42 +910,58 @@ function spawnMissile(startX, startY, type, count) {
       missile.style.left = startX + 'px';
       missile.style.top = startY + 'px';
       missile.style.background = color;
+      missile.style.animation = 'missileSpiral 0.6s linear infinite';
       document.body.appendChild(missile);
 
+      // 浮誇光暈
+      const glow = document.createElement('div');
+      glow.className = 'missile-glow';
+      glow.style.color = color;
+      document.body.appendChild(glow);
+
       const startTime = performance.now();
-      const duration = 500 + Math.random() * 200;
-      const cp1x = startX + (Math.random() - 0.5) * 300;
-      const cp1y = startY - 150 - Math.random() * 150;
+      const duration = 600 + Math.random() * 300;
+      // 更浮誇的螺旋路徑
+      const cp1x = startX + (Math.random() > 0.5 ? 400 : -400);
+      const cp1y = startY - 300;
+      const cp2x = targetX + (Math.random() > 0.5 ? 200 : -200);
+      const cp2y = targetY + 200;
 
       function anim(time) {
-        const t = Math.min(1, (time - startTime) / duration);
-        const x = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * cp1x + t * t * targetX;
-        const y = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * cp1y + t * t * targetY;
+        const t = (time - startTime) / duration;
+        if (t >= 1) {
+          missile.remove(); glow.remove();
+          spawnExplosion(targetX, targetY, color);
+          if (i === count - 1) triggerMonsterHit(type);
+          return;
+        }
+
+        // 三階貝茲曲線
+        const x = Math.pow(1-t,3)*startX + 3*Math.pow(1-t,2)*t*cp1x + 3*(1-t)*Math.pow(t,2)*cp2x + Math.pow(t,3)*targetX;
+        const y = Math.pow(1-t,3)*startY + 3*Math.pow(1-t,2)*t*cp1y + 3*(1-t)*Math.pow(t,2)*cp2y + Math.pow(t,3)*targetY;
 
         missile.style.left = x + 'px';
         missile.style.top = y + 'px';
+        glow.style.left = (x - 12) + 'px';
+        glow.style.top = (y - 12) + 'px';
 
-        if (Math.random() > 0.4) {
+        // 浮誇粒子拖尾
+        for(let j=0; j<2; j++){
           const trail = document.createElement('div');
           trail.className = 'missile-trail';
-          trail.style.left = x + 4 + 'px';
-          trail.style.top = y + 4 + 'px';
+          trail.style.left = (x + 4 + (Math.random()-0.5)*10) + 'px';
+          trail.style.top = (y + 4 + (Math.random()-0.5)*10) + 'px';
           trail.style.background = color;
-          trail.style.animation = 'trailFade 0.3s forwards';
+          trail.style.boxShadow = `0 0 10px ${color}`;
+          trail.style.animation = 'trailFade 0.4s forwards';
           document.body.appendChild(trail);
-          setTimeout(() => trail.remove(), 300);
+          setTimeout(() => trail.remove(), 400);
         }
 
-        if (t < 1) {
-          requestAnimationFrame(anim);
-        } else {
-          missile.remove();
-          spawnExplosion(targetX, targetY, color);
-          if (i === count - 1) triggerMonsterHit(type);
-        }
+        requestAnimationFrame(anim);
       }
       requestAnimationFrame(anim);
-    }, i * 80);
+    }, i * 60);
   }
 }
 
@@ -999,8 +1082,14 @@ function bossApplySmallSkill(skillId){
       if (bm.clearBoardExitUsed) { msg('冥河擺渡人：技能已使用', '#888'); return; }
       bm.clearBoardExitUsed = true;
       for(let r=HIDDEN;r<TOTAL;r++)board[r]=new Array(COLS).fill(0);
-      bm.bossHP = 0; // Make monster leave
-      bossStageCleared();
+      spawnDmgAnim('💥 擺渡清場','#fff');
+      // 特殊效果：清空後 BOSS 死亡
+      setTimeout(() => {
+        bm.bossHP = 0;
+        spawnDmgAnim('💀 亡靈引導', '#fff');
+        updateBossHUD();
+        bossStageCleared();
+      }, 500);
       break;
     case 'holyHeal20': {
       const heal = Math.round(bm.bossMaxHP * 0.2);
@@ -1021,11 +1110,22 @@ function bossApplySmallSkill(skillId){
       doHolyFlash(2);
       break;
     }
-    case 'dogBark': msg('吼吼吼', '#f60'); bm.inputIgnoreTimer = 1000; break;
+    case 'dogBark': 
+      showMonsterText('吼吼吼', '#f60', 1000);
+      bm.dogVisionTimer = 1000;
+      break;
     case 'shake8': startScreenShake(8000); break;
     case 'dmgDebuff40': bm.dmgDebuffMult = 0.6; bm.dmgDebuffTimer = 8000; break;
     case 'comboOnly': bm.comboOnlyTimer = 6000; break;
-    case 'rowSeal': bm.rowSealTimer = 3000; bm.sealedRow = Math.floor(Math.random()*ROWS)+HIDDEN; break;
+    case 'rowSeal': 
+      if(Math.random() < 0.5){
+        held = null;
+        spawnDmgAnim('🌅 晨曦：清空Hold', '#ffd700');
+        updateHoldBtn();
+      } else {
+        spawnDmgAnim('🌅 晨曦：失效', '#888');
+      }
+      break;
     case 'dropSeal': bm.dropSealTimer = 6000; break;
     case 'topMask': bm.topMaskTimer = 2000; break;
     case 'speedBoost': bm.speedBoostTimer = 3000; break;
@@ -1137,6 +1237,20 @@ function drawSkeletonVision(dt){
   mainCtx.restore();
 }
 
+// ID 19 地獄犬：狗狗幻影閃爍效果
+function drawDogVision(dt){
+  if(!bm.active||bm.dogVisionTimer<=0)return;
+  mainCtx.save();
+  mainCtx.globalAlpha = 0.35;
+  const fontSize = Math.round(mainCvs.height * 0.7);
+  mainCtx.font = `bold ${fontSize}px serif`;
+  mainCtx.textAlign = 'center';
+  mainCtx.textBaseline = 'middle';
+  mainCtx.fillStyle = 'rgba(255,100,0,1)';
+  mainCtx.fillText('\uD83D\uDC15', mainCvs.width / 2, mainCvs.height / 2);
+  mainCtx.restore();
+}
+
 function bossTriggerCounterAttack(){
   if(!bm.active||bm.bossHP<=0)return;
   if(bm.ironWillCharges>0){bm.ironWillCharges--;spawnDmgAnim('🛡️ 抵銷！','#fff');updateBossHUD();return;}
@@ -1150,10 +1264,8 @@ function bossTriggerCounterAttack(){
   const BOSS_STAGES = [6, 12, 18, 24, 30, 36, 42];
   if (BOSS_STAGES.includes(bm.stage)) {
     if (bm.stage <= 30) {
-      // 關卡 6 12 18 24 30：血量 < 40% 施放一次
       if (hpPct < 0.4 && bm.healTriggeredCount < 1) canHeal = true;
     } else {
-      // 關卡 36 42：血量 < 60%, 40%, 20% 各施放一次
       if (bm.healTriggeredCount === 0 && hpPct < 0.6) canHeal = true;
       else if (bm.healTriggeredCount === 1 && hpPct < 0.4) canHeal = true;
       else if (bm.healTriggeredCount === 2 && hpPct < 0.2) canHeal = true;
@@ -1162,8 +1274,8 @@ function bossTriggerCounterAttack(){
 
   if(canHeal){
     bm.healTriggeredCount++;
-    // 回血量：BOSS 專屬回血量 25%
-    const heal = Math.round(bm.bossMaxHP * 0.25);
+    // 鮮血再生：恢復 15% HP
+    const heal = Math.round(bm.bossMaxHP * 0.15);
     bm.bossHP = Math.min(bm.bossMaxHP, bm.bossHP + heal);
     spawnDmgAnim('🩸 鮮血再生！', '#f00');
     updateBossHUD();
@@ -1174,29 +1286,34 @@ function bossTriggerCounterAttack(){
   let skillId = '';
   let skillName = '';
   if(bm.isBoss){
-    // 大 BOSS 技能邏輯（排除鮮血再生索引 0，因為已在上方獨立處理）
-    let skIdx;
-    const availableSkills = boss.skills.filter(s => s !== 0);
-    if (availableSkills.length > 0) {
-      skIdx = availableSkills[Math.floor(Math.random() * availableSkills.length)];
-    } else {
-      skIdx = 1; // 預設魔物大軍
-    }
+    // 大 BOSS 技能邏輯：刪除魔物大軍，僅施放專屬大招
+    const availableSkills = boss.skills.filter(s => s !== 0); // 0 是鮮血再生
+    let skIdx = availableSkills.length > 0 ? availableSkills[Math.floor(Math.random() * availableSkills.length)] : 1;
     
+    // 確保 skIdx 在 BOSS_BIG_SKILLS 範圍內 (1-3)
+    skIdx = Math.max(1, Math.min(skIdx, 3));
     const bigSkill = BOSS_BIG_SKILLS[skIdx];
     skillName = bigSkill.name;
     
-    if(skIdx === 1){ // 魔物大軍
-      const mIdx = Math.floor(Math.random() * SMALL_MONSTERS.length);
-      skillId = SMALL_MONSTERS[mIdx].skillId;
-      bossApplySmallSkill(skillId);
-      skillName = '魔物大軍：' + SMALL_MONSTERS[mIdx].name;
-    } else {
-      // 其他大招索引（黑暗制裁、重力壓制等），暫時退回到隨機小怪技能
-      const mIdx = Math.floor(Math.random() * SMALL_MONSTERS.length);
-      skillId = SMALL_MONSTERS[mIdx].skillId;
-      bossApplySmallSkill(skillId);
+    if(skIdx === 1){ // 黑暗制裁
+      const blackout = document.getElementById('blackoutOverlay');
+      if(blackout){
+        blackout.style.display = 'block';
+        setTimeout(()=> blackout.style.display = 'none', 1000);
+      }
+      bm.holdSealTimer = 2000;
+      spawnDmgAnim('🌑 黑暗制裁','#f0f');
+    } else if(skIdx === 2){ // 重力壓制
+      bm.bossDmgReduceTimer = 4000;
+      spawnDmgAnim('🛡️ 重力壓制：減傷','#0ff');
+    } else if(skIdx === 3){ // 虛空裂縫
+      // 消除最底下一行方塊 (不產生 score)
+      for(let r=TOTAL-1; r>HIDDEN; r--) board[r] = [...board[r-1]];
+      board[HIDDEN] = new Array(COLS).fill(0);
+      triggerShake();
+      spawnDmgAnim('🌌 虛空裂縫：消行','#80f');
     }
+    skillId = 'bossBigSkill';
   } else {
     skillId = boss.skillId;
     skillName = boss.name;
@@ -1220,7 +1337,7 @@ function bossDealDamage(rawScore,isTspin,isTetris,isAC,nLines){
   if(bm.tradeHoldActive)dmg*=2.0;
   dmg*=bm.armorBreakMult;
   dmg+=bm.lineDmgBonus*nLines;
-  if(bm.counterLawCount>0)dmg*=Math.pow(bm.isBoss?1.1:0.5,bm.counterLawCount);
+  if(bm.counterLawCount>0)dmg*=Math.pow(bm.isBoss?1.1:0.85,bm.counterLawCount);
   if(bm.comboBurstBonus>0&&combo>=1)dmg*=(1+bm.comboBurstBonus*combo);
   if(b2b&&bm.b2bEnhanceActive)dmg*=2.0;
   // ID 22 聖堂守衛：聖盾（僅 Combo 可造成傷害）
@@ -1228,6 +1345,8 @@ function bossDealDamage(rawScore,isTspin,isTetris,isAC,nLines){
     dmg = 0; spawnDmgAnim('🛡️ Combo不足！','#fff');
   }
   dmg*=bm.dmgDebuffMult;
+  // 重力壓制減傷 30%
+  if(bm.active && bm.bossDmgReduceTimer > 0) dmg *= 0.7;
   dmg=Math.round(dmg);
   if(bm.bossShieldHP>0){
     const abs=Math.min(bm.bossShieldHP,dmg);
@@ -1321,22 +1440,27 @@ function bossStartStage(stage){
   const sd=bossGetStageData(stage);
   bm.isBoss=sd.isBoss;bm.bossData=sd.data;bm.bossShieldHP=0;
   bm.stageDmgDealt=0;bm.stageStartTime=Date.now();bm.healTriggeredCount=0;
-  // 小怪血量：關卡*1000，BOSS 血量：關卡*3400
   bm.bossMaxHP = sd.isBoss ? (stage * 3400) : (stage * 1000);
   bm.bossHP=bm.bossMaxHP;
   running=true;paused=false;lastTs=performance.now();
   bm.COUNTER_BASE=(sd.isBoss?12000:8000);
   bm.counterTimer=bm.COUNTER_BASE+bm.counterDelayBonus;
-	  // clear timed effects
-	  bm.holdSealTimer=bm.darkTimer=bm.reverseTimer=bm.transpTimer=0;
-	  bm.gravBoostTimer=bm.fastLockTimer=bm.dasSlowTimer=bm.deformTimer=0;
-	  bm.blockCenterTimer=bm.blockBottomTimer=bm.hideBlocksTimer=0;
-	  bm.inputIgnoreTimer=bm.rotDelayTimer=0;
-	  bm.rotSealTimer=bm.colorPoisonTimer=bm.shakeTimer=bm.onlyITimer=0;
-	  bm.comboOnlyTimer=bm.rowSealTimer=bm.dropSealTimer=bm.autoHealTimer=bm.grayScaleTimer=0;
-	  bm.topMaskTimer=bm.skeletonVisionTimer=0;
-	  if(bm.shakeIntervalId){clearInterval(bm.shakeIntervalId);bm.shakeIntervalId=null;}bm.shakeIntervalAcc=0;
-	  bm.dmgDebuffMult=1.0;bm.dmgDebuffTimer=0;bm.attackFlash={timer:0,name:'',col:'#ff4040'};
+  
+  // 確保面板正確切換
+  const dNorm=document.getElementById('deskRNorm'), dBoss=document.getElementById('deskRBoss');
+  if(dNorm) dNorm.style.display='flex';
+  if(dBoss) dBoss.style.display='flex';
+  
+  // clear timed effects
+  bm.holdSealTimer=bm.darkTimer=bm.reverseTimer=bm.transpTimer=0;
+  bm.gravBoostTimer=bm.fastLockTimer=bm.dasSlowTimer=bm.deformTimer=0;
+  bm.blockCenterTimer=bm.blockBottomTimer=bm.hideBlocksTimer=0;
+  bm.inputIgnoreTimer=bm.rotDelayTimer=0;
+  bm.rotSealTimer=bm.colorPoisonTimer=bm.shakeTimer=bm.onlyITimer=0;
+  bm.comboOnlyTimer=bm.rowSealTimer=bm.dropSealTimer=bm.autoHealTimer=bm.grayScaleTimer=0;
+  bm.topMaskTimer=bm.skeletonVisionTimer=bm.dogVisionTimer=bm.bossDmgReduceTimer=0;
+  if(bm.shakeIntervalId){clearInterval(bm.shakeIntervalId);bm.shakeIntervalId=null;}bm.shakeIntervalAcc=0;
+  bm.dmgDebuffMult=1.0;bm.dmgDebuffTimer=0;bm.attackFlash={timer:0,name:'',col:'#ff4040'};
   bm.dmgAnims=[];
   updateBossHUD();
   const el=document.getElementById('msgTxt');
@@ -1670,7 +1794,12 @@ function drawAI(){
   if(ai.dead){aiCtx.fillStyle='rgba(0,0,0,.7)';aiCtx.fillRect(0,0,aiCvs.width,aiCvs.height);aiCtx.fillStyle='#f44';aiCtx.font=`bold ${C*1.4}px monospace`;aiCtx.textAlign='center';aiCtx.textBaseline='middle';aiCtx.fillText('DEAD',aiCvs.width/2,aiCvs.height/2);aiCtx.textAlign='left';aiCtx.textBaseline='alphabetic';}
 }
 function initAI(){ai.board=aiNewBoard();ai.bag=[];ai.nextQ=[];ai.cur=null;ai.held=null;ai.holdUsed=false;ai.score=0;ai.lines=0;ai.level=1;ai.gravAcc=0;ai.lockOn=false;ai.lockTimer=0;ai.lockMoves=0;ai.clearAnim=null;ai.clearTimer=0;ai.thinkTimer=0;ai.bestMove=null;ai.garbQ=0;ai.dead=false;ai.combo=-1;aiFillNext();ai.cur=aiSpawnPiece(ai.nextQ.shift());}
-function updateBattleHUD(){if(curMode!=='battle')return;document.getElementById('bpScore').textContent=score.toLocaleString();document.getElementById('baScore').textContent=ai.score.toLocaleString();document.getElementById('bpLines').textContent=lines;document.getElementById('baLines').textContent=ai.lines;const rem=Math.max(0,120000-modeTimer);document.getElementById('bTimer').textContent=fmtTime(rem);document.getElementById('bTimer').style.color=rem<30000?'#f55':rem<60000?'#ff0':'#0f0';}
+function updateBattleHUD(){
+  if(curMode==='battle'){
+    document.getElementById('bpScore').textContent=score.toLocaleString();document.getElementById('baScore').textContent=ai.score.toLocaleString();document.getElementById('bpLines').textContent=lines;document.getElementById('baLines').textContent=ai.lines;const rem=Math.max(0,120000-modeTimer);document.getElementById('bTimer').textContent=fmtTime(rem);document.getElementById('bTimer').style.color=rem<30000?'#f55':rem<60000?'#ff0':'#0f0';
+  }
+  // BOSS 模式下，updateBossHUD 會被呼叫，這裡不需要額外處理
+}
 
 // ── PLAYER DATA COLLECTION ──
 const DATA_KEY='ttv16_data',MAX_DATA=2000;
@@ -2018,7 +2147,7 @@ function hits(t,r,x,y,brd){
 function ghostRow(){let gy=cur.y;while(!hits(cur.type,cur.rot,cur.x,gy+1,board))gy++;return gy;}
 function stackTopRow(){for(let r=HIDDEN;r<TOTAL;r++)if(board[r].some(c=>c))return r-HIDDEN;return ROWS;}
 function moveH(d){if(!cur||clearAnim)return;if(bm.active&&bm.inputIgnoreTimer>0)return;const rd=(bm.active&&bm.reverseTimer>0)?-d:d;if(!hits(cur.type,cur.rot,cur.x+rd,cur.y,board)){cur.x+=rd;tspinType='none';sndMove();if(lockOn&&lockMoves<15){lockTimer=0;lockMoves++;}}}
-function rotate(dir){if(!cur||clearAnim)return;if(bm.active&&(bm.inputIgnoreTimer>0||bm.rotDelayTimer>0))return;const from=cur.rot,to=(from+(dir===1?1:3))%4,key=`${from}>${to}`;const kicks=cur.type==='I'?KI:KN;for(const[dc,dr]of[[0,0],...(kicks[key]||[])]){const nx=cur.x+dc,ny=cur.y-dr;if(!hits(cur.type,to,nx,ny,board)){cur.rot=to;cur.x=nx;cur.y=ny;sndRotate();detectTSpin();if(lockOn)lockTimer=0;return;}}}
+function rotate(dir){if(!cur||clearAnim)return;if(bm.active&&(bm.inputIgnoreTimer>0||bm.rotDelayTimer>0||bm.rotSealTimer>0))return;const from=cur.rot,to=(from+(dir===1?1:3))%4,key=`${from}>${to}`;const kicks=cur.type==='I'?KI:KN;for(const[dc,dr]of[[0,0],...(kicks[key]||[])]){const nx=cur.x+dc,ny=cur.y-dr;if(!hits(cur.type,to,nx,ny,board)){cur.rot=to;cur.x=nx;cur.y=ny;sndRotate();detectTSpin();if(lockOn)lockTimer=0;return;}}}
 function detectTSpin(){tspinType='none';if(cur.type!=='T')return;let n=0;for(const[r,c]of[[cur.y,cur.x],[cur.y,cur.x+2],[cur.y+2,cur.x],[cur.y+2,cur.x+2]])if(r<0||r>=TOTAL||c<0||c>=COLS||board[r][c])n++;if(n>=3)tspinType='full';}
 function hardDrop(){if(!cur)return;if(bm.active&&bm.inputIgnoreTimer>0)return;if(bm.active&&bm.dropSealTimer>0){spawnDmgAnim('⛪硬降封鎖','#fa0');return;}const landY=ghostRow();const d=landY-cur.y;if(d>0)addPop(`+${d*2}`,'#7799ff');score+=2*d;cur.y=landY;const hs=g(cur.type,cur.rot),hcol=SHP[cur.type].c;for(let ri=0;ri<hs.length;ri++)for(let ci=0;ci<hs[ri].length;ci++){if(!hs[ri][ci])continue;const dr=cur.y+ri-HIDDEN,dc=cur.x+ci;if(dr<0||dr>=ROWS)continue;for(let k=0;k<4;k++)particles.push({x:(dc+Math.random())*CELL,y:(dr+1)*CELL,vx:(Math.random()-.5)*CELL*.42,vy:-(Math.random()*.6+.2)*CELL*.3,col:hcol,age:0,maxAge:180+Math.random()*100,sz:Math.round(CELL*.13+Math.random()*CELL*.1)});}sndHardDrop();lockPiece();}
 function doHold(){if(!cur||holdUsed||clearAnim)return;if(bm.active&&(bm.holdDisabled||bm.holdSealTimer>0)){spawnDmgAnim('Hold封印','#f84');return;}holdUsed=true;sndHold();if(held===null){held=cur.type;spawnNext();}else{const t=held;held=cur.type;cur=spawn(t);if(hits(cur.type,cur.rot,cur.x,cur.y,board)){if(!MODES[curMode].zenMode)gameOver();else zenRecover();return;}}lockOn=false;lockTimer=0;lockMoves=0;tspinType='none';updateHoldBtn();}
@@ -2282,6 +2411,8 @@ function draw(dt){
     drawBossDmgAnims(dt||0);
     // ID 5 骷髏王：骷髏幻影閃爍效果
     if(bm.skeletonVisionTimer>0)drawSkeletonVision(dt||0);
+    // ID 19 地獄犬：狗狗幻影效果
+    if(bm.dogVisionTimer>0)drawDogVision(dt||0);
   }
   drawHoldTo(holdDctx,holdD);drawHoldTo(holdPctx,holdP);drawHoldTo(holdLctx,holdL);if(holdBtlCtx&&holdBtl)drawHoldTo(holdBtlCtx,holdBtl);const hideNext=bm.active&&bm.hideNextTimer>0;
 if(!hideNext){drawNextTo(nextDctx,nextD,NEXT_N);drawNextTo(nextPctx,nextP,3);drawNextTo(nextLctx,nextL,3);}
@@ -2459,6 +2590,8 @@ function loop(ts){raf=requestAnimationFrame(loop);if(!running||paused)return;con
       if(bm.dropSealTimer>0)bm.dropSealTimer-=dt;
       if(bm.topMaskTimer>0)bm.topMaskTimer-=dt;
       if(bm.skeletonVisionTimer>0)bm.skeletonVisionTimer-=dt;
+      if(bm.dogVisionTimer>0)bm.dogVisionTimer-=dt;
+      if(bm.bossDmgReduceTimer>0)bm.bossDmgReduceTimer-=dt;
       if(bm.speedBoostTimer>0)bm.speedBoostTimer-=dt;
       if(bm.autoHealTimer>0){
         bm.autoHealTimer-=dt;
