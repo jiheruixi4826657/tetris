@@ -181,21 +181,36 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
 #bossSkillFlash{position:fixed;inset:0;pointer-events:none;z-index:80;display:none}
 	#bossSkillFlash.active{display:block;animation:bossFlashAnim .7s ease-out forwards}
 	/* Monster UI */
-	#monsterView{
-	  width:100%;height:100px;background:linear-gradient(180deg,rgba(20,0,20,0.8),rgba(0,0,0,0.6));
-	  border:1px solid #424;border-radius:8px;display:flex;align-items:center;justify-content:center;
-	  position:relative;overflow:hidden;margin-bottom:4px;box-shadow:inset 0 0 15px rgba(255,0,255,0.1);
-	}
-	#monsterArt{
-	  font-size:3.2rem;text-shadow:0 0 20px rgba(255,0,0,0.4);
-	  animation:floatAnim 2.5s ease-in-out infinite;z-index:2;
-	}
-	@keyframes floatAnim{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-	#monsterHitFlash{
-	  position:absolute;inset:0;background:rgba(255,255,255,0.5);opacity:0;pointer-events:none;z-index:3;
-	}
-	@keyframes hitFlashAnim{0%{opacity:1}100%{opacity:0}}
-	.hit-flash{animation:hitFlashAnim 0.2s ease-out forwards}
+		#monsterView{
+		  width:100%;height:150px;background:#000;
+		  border:1px solid #424;border-radius:8px;display:flex;align-items:center;justify-content:center;
+		  position:relative;overflow:hidden;margin-bottom:4px;box-shadow:inset 0 0 30px rgba(255,0,255,0.2);
+		  transition: background 0.5s;
+		}
+		#monsterAura{
+		  position:absolute;inset:0;
+		  background:radial-gradient(circle at center, rgba(255,0,0,0.2) 0%, transparent 70%);
+		  opacity:0.6;animation:auraPulse 3s ease-in-out infinite;
+		}
+		@keyframes auraPulse{0%,100%{transform:scale(1);opacity:0.4}50%{transform:scale(1.2);opacity:0.7}}
+		#monsterArt{
+		  font-size:4.5rem;text-shadow:0 0 30px rgba(255,0,0,0.6);
+		  animation:floatAnim 2.5s ease-in-out infinite;z-index:2;
+		  transition: transform 0.1s, filter 0.1s;
+		}
+		@keyframes floatAnim{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-15px) scale(1.05)}}
+		#monsterHitFlash{
+		  position:absolute;inset:0;background:rgba(255,255,255,0.6);opacity:0;pointer-events:none;z-index:3;
+		}
+		@keyframes hitFlashAnim{0%{opacity:1}100%{opacity:0}}
+		.hit-flash{animation:hitFlashAnim 0.2s ease-out forwards}
+		@keyframes monsterShake{0%{transform:translate(0,0)}25%{transform:translate(-8px,4px) scale(0.9)}50%{transform:translate(8px,-4px) scale(1.1)}75%{transform:translate(-4px,-8px)}100%{transform:translate(0,0)}}
+		.monster-hit{animation: monsterShake 0.2s ease-in-out !important;}
+		/* Explosion Particles */
+		.exp-part{
+		  position:fixed;width:6px;height:6px;border-radius:50%;z-index:151;pointer-events:none;
+		}
+		@keyframes expFade{0%{transform:scale(1.5);opacity:1}100%{transform:scale(0);opacity:0}}
 	/* Missile & Impact */
 	.missile{
 	  position:fixed;width:12px;height:12px;border-radius:50%;z-index:150;pointer-events:none;
@@ -345,11 +360,19 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
   <div id="cardCountdownEl" style="font-size:.85rem;color:#fa0;min-height:1.2em;text-align:center"></div>
 </div>
 <!-- Stage result -->
-<div id="stageResult" class="hidden">
-  <div id="srTitle" style="font-size:1.3rem;letter-spacing:3px;font-weight:bold"></div>
-  <div id="srDetails" style="font-size:.78rem;color:#aaa;text-align:center;line-height:2"></div>
-  <button class="btn" id="stageNextBtn">繼續</button>
-</div>
+	<div id="stageResult" class="hidden">
+	  <div id="srTitle" style="font-size:1.3rem;letter-spacing:3px;font-weight:bold"></div>
+	  <div id="srDetails" style="font-size:.78rem;color:#aaa;text-align:center;line-height:2"></div>
+	  <button class="btn" id="stageNextBtn" onclick="onStageNext()">繼續</button>
+	</div>
+	<div id="skillPreviewOverlay">
+	  <div style="font-size:0.7rem;color:#888;margin-bottom:4px">下一位挑戰者</div>
+	  <div id="spArt" style="font-size:3rem"></div>
+	  <div id="spName"></div>
+	  <div id="spSkill"></div>
+	  <div id="spTimer">4</div>
+	  <div style="font-size:0.6rem;color:#555;margin-top:10px">準備戰鬥...</div>
+	</div>
 <!-- Boss all clear ending -->
 <div id="bossEnding" class="hidden">
   <div style="font-size:1.6rem;color:#ffd700;text-shadow:0 0 30px #ffd700;letter-spacing:4px;font-weight:bold">🌟 ALL CLEAR!</div>
@@ -419,11 +442,12 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
       <div class="box"><div class="lbl">ATK</div><div class="val" id="atkEl">0</div></div>
       <div class="box" id="modeEl" style="font-size:.52rem;color:#444;text-align:center;line-height:1.9"></div>
     </div>
-	    <div id="deskRBoss" style="display:none;flex-direction:column;gap:4px;width:100%">
-	      <div id="monsterView">
-	        <div id="monsterArt">👹</div>
-	        <div id="monsterHitFlash"></div>
-	      </div>
+		    <div id="deskRBoss" style="display:none;flex-direction:column;gap:4px;width:100%">
+		      <div id="monsterView">
+		        <div id="monsterAura"></div>
+		        <div id="monsterArt">👹</div>
+		        <div id="monsterHitFlash"></div>
+		      </div>
 	      <div id="bmName" style="font-size:.58rem;color:#f66;text-align:center;font-weight:bold;letter-spacing:1px"></div>
 	      <div id="bmStage" style="font-size:.45rem;color:#888;text-align:center"></div>
       <div style="padding:0 3px">
@@ -614,9 +638,38 @@ function updateBossHUD(){
   const btN=document.getElementById('btName');if(btN)btN.textContent=(bm.bossData?bm.bossData.art+' '+bm.bossData.name:'');
   const btSt=document.getElementById('btStage');if(btSt)btSt.textContent=`${bm.stage}/42`;
   const btT=document.getElementById('btTimer');if(btT)btT.textContent=(bm.counterTimer/1000).toFixed(1)+'s';
-	  // desk right panel
-	  const mArt=document.getElementById('monsterArt');if(mArt)mArt.textContent=bm.bossData?bm.bossData.art:'';
-	  const bmN=document.getElementById('bmName');if(bmN)bmN.textContent=bm.bossData?bm.bossData.name:'';
+  // desk right panel
+  const mArt=document.getElementById('monsterArt');if(mArt)mArt.textContent=bm.bossData?bm.bossData.art:'';
+  
+  // 動態怪物氣場與背景顏色
+  const mView = document.getElementById('monsterView');
+  const mAura = document.getElementById('monsterAura');
+  const cdRing = document.getElementById('cdRing');
+  if(mView && mAura && bm.bossData){
+    const name = bm.bossData.name;
+    let color = '#ff0000'; // 預設紅色
+    if(name.includes('烈焰') || name.includes('火')) color = '#ff4500';
+    else if(name.includes('冰') || name.includes('寒')) color = '#00ffff';
+    else if(name.includes('虛空') || name.includes('冥')) color = '#8a2be2';
+    else if(name.includes('腐') || name.includes('毒')) color = '#32cd32';
+    else if(name.includes('混沌') || name.includes('雷')) color = '#ffd700';
+    
+    mAura.style.background = `radial-gradient(circle at center, ${color}66 0%, transparent 70%)`;
+    mView.style.boxShadow = `inset 0 0 40px ${color}33`;
+    mArt.style.filter = `drop-shadow(0 0 15px ${color}aa)`;
+    
+    // 環形 CD 條更新
+    if(cdRing){
+      const ringPct = Math.max(0, bm.counterTimer / (bm.COUNTER_BASE + bm.counterDelayBonus));
+      cdRing.style.borderTopColor = color;
+      cdRing.style.borderRightColor = ringPct > 0.25 ? color : 'transparent';
+      cdRing.style.borderBottomColor = ringPct > 0.5 ? color : 'transparent';
+      cdRing.style.borderLeftColor = ringPct > 0.75 ? color : 'transparent';
+      cdRing.style.transform = `rotate(${(1 - ringPct) * 360}deg)`;
+    }
+  }
+
+  const bmN=document.getElementById('bmName');if(bmN)bmN.textContent=bm.bossData?bm.bossData.name:'';
   const bmS=document.getElementById('bmStage');if(bmS)bmS.textContent=`Stage ${bm.stage}/42 ${bm.isBoss?'⚠ BOSS':''}`;
   const bmHF=document.getElementById('bmHPFill');if(bmHF)bmHF.style.width=pct+'%';
   const bmHN=document.getElementById('bmHPNum');if(bmHN)bmHN.textContent=hpTxt;
@@ -675,6 +728,9 @@ function spawnMissile(startX, startY, type, count) {
   const colors = { 1: '#0ff', 2: '#0f0', 3: '#ff0', 4: '#f0f', 'T': '#a0f' };
   const color = colors[type] || '#fff';
 
+  // 發射音效
+  osc(150 + count * 20, 'sine', 0, 0.1, 0.1);
+
   for (let i = 0; i < count; i++) {
     setTimeout(() => {
       const missile = document.createElement('div');
@@ -686,44 +742,73 @@ function spawnMissile(startX, startY, type, count) {
       document.body.appendChild(missile);
 
       const startTime = performance.now();
-      const duration = 600 + Math.random() * 300;
-      const cp1x = startX + (Math.random() - 0.5) * 400;
-      const cp1y = startY - 200 - Math.random() * 200;
+      const duration = 500 + Math.random() * 200;
+      const cp1x = startX + (Math.random() - 0.5) * 300;
+      const cp1y = startY - 150 - Math.random() * 150;
 
       function anim(time) {
         const t = Math.min(1, (time - startTime) / duration);
-        // Bezier curve
         const x = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * cp1x + t * t * targetX;
         const y = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * cp1y + t * t * targetY;
 
         missile.style.left = x + 'px';
         missile.style.top = y + 'px';
 
-        // Trail
-        if (Math.random() > 0.3) {
+        if (Math.random() > 0.4) {
           const trail = document.createElement('div');
           trail.className = 'missile-trail';
           trail.style.left = x + 4 + 'px';
           trail.style.top = y + 4 + 'px';
           trail.style.background = color;
-          trail.style.animation = 'trailFade 0.4s forwards';
+          trail.style.animation = 'trailFade 0.3s forwards';
           document.body.appendChild(trail);
-          setTimeout(() => trail.remove(), 400);
+          setTimeout(() => trail.remove(), 300);
         }
 
         if (t < 1) {
           requestAnimationFrame(anim);
         } else {
           missile.remove();
-          if (i === count - 1) triggerMonsterHit();
+          spawnExplosion(targetX, targetY, color);
+          if (i === count - 1) triggerMonsterHit(type);
         }
       }
       requestAnimationFrame(anim);
-    }, i * 100);
+    }, i * 80);
   }
 }
 
-function triggerMonsterHit() {
+function spawnExplosion(x, y, color) {
+  // 擊中爆炸音效
+  osc(60 + Math.random() * 40, 'triangle', 0, 0.08, 0.1);
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement('div');
+    p.className = 'exp-part';
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    p.style.background = color;
+    p.style.boxShadow = `0 0 8px ${color}`;
+    const ang = Math.random() * Math.PI * 2;
+    const dist = 20 + Math.random() * 40;
+    const tx = Math.cos(ang) * dist;
+    const ty = Math.sin(ang) * dist;
+    p.style.setProperty('--tx', tx + 'px');
+    p.style.setProperty('--ty', ty + 'px');
+    p.style.animation = 'expFade 0.4s ease-out forwards';
+    document.body.appendChild(p);
+    
+    const startTime = performance.now();
+    function anim(time) {
+      const t = Math.min(1, (time - startTime) / 400);
+      p.style.transform = `translate(${tx * t}px, ${ty * t}px) scale(${1 - t})`;
+      if (t < 1) requestAnimationFrame(anim);
+      else p.remove();
+    }
+    requestAnimationFrame(anim);
+  }
+}
+
+function triggerMonsterHit(type) {
   const flash = document.getElementById('monsterHitFlash');
   if (flash) {
     flash.classList.remove('hit-flash');
@@ -732,22 +817,60 @@ function triggerMonsterHit() {
   }
   const art = document.getElementById('monsterArt');
   if (art) {
-    art.style.animation = 'none';
+    art.classList.remove('monster-hit');
     void art.offsetWidth;
-    art.style.animation = 'floatAnim 2.5s ease-in-out infinite, shake 0.2s';
+    art.classList.add('monster-hit');
+    
+    // 強力消除時的額外震動
+    if (type === 4 || type === 'T') {
+      triggerShake();
+      vib([30, 15, 30]);
+    }
   }
 }
 
 function bossApplySmallSkill(skillId){
-  if(bm.ironWillCharges>0){bm.ironWillCharges--;spawnDmgAnim('🛡 免疫','#8080ff');updateBossHUD();return;}
+  if(bm.ironWillCharges>0){bm.ironWillCharges--;spawnDmgAnim('🛡️ 抵銷！','#fff');return;}
+  
+  const msg = (txt, col) => {
+    const el = document.getElementById('msgTxt');
+    el.textContent = txt; el.style.color = col || '#f44'; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 1200);
+  };
+
   switch(skillId){
-    case 'burn': bm.burnTimer=3000; bm.dmgDebuffMult=0.80; bm.dmgDebuffTimer=3000; spawnDmgAnim('🔥 燃燒','#f40'); break;
-    case 'freeze': bm.freezeTimer=3000; freezeBoard(3); spawnDmgAnim('❄️ 冰凍','#0cf'); break;
-    case 'rift': bm.riftTimer=3000; spawnDmgAnim('🌌 虛空撕裂','#a0f'); break;
-    case 'corrupt': bm.corruptTimer=3000; spawnDmgAnim('🌑 腐化','#888'); break;
-    case 'weaken': bm.weakenTimer=3000; spawnDmgAnim('💀 虛弱','#aaa'); break;
-    case 'chaos': bm.chaosTimer=2000; spawnDmgAnim('🌪️ 混亂','#ff0'); break;
-    default: break;
+    case 'hideNextPiece': bm.hideNextTimer = 3000; break;
+    case 'goblinGiggle': msg('咯咯咯咯咯咯', '#0f0'); break;
+    case 'skeletonTaunt': msg('放棄吧勇者', '#fff'); break;
+    case 'comboDown2': combo = Math.max(-1, combo - 2); break;
+    case 'skeletonVision': bm.darkTimer = 3000; break;
+    case 'rotSeal2': bm.rotSealTimer = 2000; break;
+    case 'colorPoison': bm.colorPoisonTimer = 3000; break;
+    case 'holdSeal2': bm.holdSealTimer = 2000; break;
+    case 'shake4': bm.shakeTimer = 4000; break;
+    case 'darkReset': bm.darkTimer = 1500; combo = -1; break;
+    case 'onlyI': bm.onlyITimer = 2000; break;
+    case 'dmgDebuff20': bm.dmgDebuffMult = 0.8; bm.dmgDebuffTimer = 3000; break;
+    case 'hideNextArea': bm.hideNextTimer = 4000; break;
+    case 'gargoyleGaze': msg('被魔物冷眼看了一下', '#888'); break;
+    case 'clearBoardExit': 
+      for(let r=HIDDEN;r<TOTAL;r++)board[r]=new Array(COLS).fill(0);
+      bm.bossHP = 0; bossStageCleared(); break;
+    case 'holyHeal20': 
+      const heal = Math.round(bm.bossMaxHP * 0.2);
+      bm.bossHP = Math.min(bm.bossMaxHP, bm.bossHP + heal);
+      osc(440, 'sine', 0, 0.5, 0.3, 880); msg('Holy Heal', '#fff'); break;
+    case 'dogBark': msg('吼吼吼', '#f60'); break;
+    case 'shake8': bm.shakeTimer = 8000; break;
+    case 'dmgDebuff40': bm.dmgDebuffMult = 0.6; bm.dmgDebuffTimer = 8000; break;
+    case 'comboOnly': bm.comboOnlyTimer = 6000; break;
+    case 'rowSeal': bm.rowSealTimer = 3000; bm.sealedRow = Math.floor(Math.random()*ROWS)+HIDDEN; break;
+    case 'dropSeal': bm.dropSealTimer = 6000; break;
+    case 'topMask': bm.riftTimer = 2000; break;
+    case 'speedBoost': bm.gravBoostTimer = 3000; break;
+    case 'autoHeal': bm.autoHealTimer = 4000; break;
+    case 'holySword': triggerShake(); msg('聖劍降落！', '#ffd700'); break;
+    case 'grayScale': bm.grayScaleTimer = 5000; bm.shakeTimer = 1000; break;
   }
   updateBossHUD();
 }
@@ -822,70 +945,46 @@ function drawBossFlash(dt){
 }
 function bossTriggerCounterAttack(){
   if(!bm.active||bm.bossHP<=0)return;
-  if(bm.ironWillCharges>0){bm.ironWillCharges--;spawnDmgAnim('🛡 免疫','#8080ff');updateBossHUD();return;}
-  let skillName='',skillCol='#ff4040';
-  if(bm.isBoss){
-    const boss=bm.bossData;
-    let skillIdx;
-    if(!bm.healTriggered&&bm.bossHP<bm.bossMaxHP*.5){bm.healTriggered=true;skillIdx=2;}
-    else{skillIdx=boss.skills[0|Math.random()*boss.skills.length];}
-    const sk=BOSS_BIG_SKILLS[skillIdx];
-    skillName=sk.name;skillCol=boss.color||'#ff4040';
-    // Apply big boss skill effects
-    if(skillIdx===0){
-      // 烈焰焚身
-      bm.burnTimer=3000; bm.dmgDebuffMult=0.80; bm.dmgDebuffTimer=3000;
-    } else if(skillIdx===1){
-      // 極寒冰凍
-      bm.freezeTimer=3000; freezeBoard(3);
-    } else if(skillIdx===2){
-      // 鮮血再生 — heal 15-20% (限一次)
-      if(!bm.healTriggered){
-        bm.healTriggered=true;
-        const healPct=.15+Math.random()*.05;
-        const healed=Math.round(bm.bossMaxHP*healPct);
-        bm.bossHP=Math.min(bm.bossMaxHP,bm.bossHP+healed);
-        spawnDmgAnim(`+${healed.toLocaleString()}💚`,'#00e040');
-        updateBossHUD();
-      } else {
-        // 如果已經觸發過，改為隨機一個小怪技能
-        bossApplySmallSkill(SMALL_MONSTERS[Math.floor(Math.random()*SMALL_MONSTERS.length)].skillId);
-      }
-    } else if(skillIdx===3){
-      // 虛弱詛咒
-      bm.weakenTimer=3000;
-    } else if(skillIdx===4){
-      // 時空混亂
-      bm.chaosTimer=2000;
-    } else if(skillIdx===5){
-      // 虛空撕裂
-      bm.riftTimer=3000;
-    }
-    // chance for extra skill (10% per boss tier, stageIdx determines tier)
-    const extraChance=boss.stageIdx*0.10;
-    if(Math.random()<extraChance){
-      const extra=boss.skills[0|Math.random()*boss.skills.length];
-      if(extra!==skillIdx){
-        const esk=BOSS_BIG_SKILLS[extra];
-        // apply extra silently
-        setTimeout(()=>{
-          if(!bm.active)return;
-          if(bm.ironWillCharges>0){bm.ironWillCharges--;return;}
-	          bossApplySmallSkill(SMALL_MONSTERS[Math.floor(Math.random()*SMALL_MONSTERS.length)].skillId);
-          spawnDmgAnim('⚡'+esk.name,skillCol);
-        },1800);
-      }
-    }
+  if(bm.ironWillCharges>0){bm.ironWillCharges--;spawnDmgAnim('🛡️ 抵銷！','#fff');updateBossHUD();return;}
+  
+  const boss = bm.bossData;
+  const hpPct = bm.bossHP / bm.bossMaxHP;
+  let canHeal = false;
+  if(bm.stage <= 30) {
+    if(hpPct < 0.4 && bm.healTriggeredCount < 1) canHeal = true;
   } else {
-    const sk=bm.bossData;
-    skillName=sk.skill;skillCol='#ff8040';
-    bossApplySmallSkill(sk.skillId);
+    const maxHeals = bm.stage >= 40 ? 4 : 3;
+    if(hpPct < 0.5 && bm.healTriggeredCount < maxHeals) canHeal = true;
   }
-  bm.attackFlash={timer:650,name:skillName,col:skillCol};
-  const fl=document.getElementById('bossSkillFlash');
-  if(fl){fl.style.background=`radial-gradient(ellipse at center,${skillCol}22 0%,transparent 70%)`;fl.style.border=`2px solid ${skillCol}88`;fl.classList.remove('active');void fl.offsetWidth;fl.classList.add('active');}
-  sndGarb();vib([20,10,30]);
-}
+
+  if(canHeal){
+    bm.healTriggeredCount++;
+    const heal = Math.round(bm.bossMaxHP * 0.25);
+    bm.bossHP = Math.min(bm.bossMaxHP, bm.bossHP + heal);
+    spawnDmgAnim('🩸 鮮血再生！', '#f00');
+    updateBossHUD();
+    bm.counterTimer = bm.COUNTER_BASE + bm.counterDelayBonus;
+    return;
+  }
+
+  let skillId = '';
+  if(bm.isBoss){
+    // Boss 隨機施放一個小怪技能池中的技能
+    const skIdx = Math.floor(Math.random() * SMALL_MONSTERS.length);
+    skillId = SMALL_MONSTERS[skIdx].skillId;
+  } else {
+    skillId = boss.skillId;
+  }
+  
+	  bossApplySmallSkill(skillId);
+	  bm.counterTimer = bm.COUNTER_BASE + bm.counterDelayBonus;
+
+	  const skillCol = bm.isBoss ? (bm.bossData.color || '#ff4040') : '#f44';
+	  bm.attackFlash={timer:650,name:bm.isBoss ? 'BOSS SKILL' : bm.bossData.skill,col:skillCol};
+	  const fl=document.getElementById('bossSkillFlash');
+	  if(fl){fl.style.background=`radial-gradient(ellipse at center,${skillCol}22 0%,transparent 70%)`;fl.style.border=`2px solid ${skillCol}88`;fl.classList.remove('active');void fl.offsetWidth;fl.classList.add('active');}
+	  sndGarb();vib([20,10,30]);
+	}
 function bossDealDamage(rawScore,isTspin,isTetris,isAC,nLines){
   if(!bm.active||bm.bossHP<=0)return;
   let dmg=rawScore;
@@ -928,26 +1027,66 @@ function bossDealDamage(rawScore,isTspin,isTetris,isAC,nLines){
 function bossStageCleared(){
   running=false;cancelAnimationFrame(raf);
   bm.stagesCleared++;
-  const elapsed=Math.round((Date.now()-bm.stageStartTime)/1000);
   const isBoss=bm.isBoss;
-  const sr=document.getElementById('stageResult');
-  const srT=document.getElementById('srTitle');
-  const srD=document.getElementById('srDetails');
-  if(srT){srT.textContent=isBoss?`⚔ BOSS 擊敗！`:`Stage ${bm.stage} 通關！`;srT.style.color=isBoss?'#ffd700':'#0f0';srT.style.textShadow=`0 0 14px ${isBoss?'#ffd700':'#0f0'}`;}
-  if(srD){srD.innerHTML=`傷害：${bm.stageDmgDealt.toLocaleString()}<br>累計傷害：${bm.totalDmgDealt.toLocaleString()}<br>用時：${elapsed}秒`;}
-  sr.classList.remove('hidden');
-  // Check if should show card
+  const nextStage = bm.stage + 1;
   const shouldCard=(bm.stage%5===0)||isBoss;
-  document.getElementById('stageNextBtn').dataset.showCard=shouldCard?'1':'0';
+
+  if(isBoss || nextStage > 42){
+    // Boss 戰或全通關，維持手動暫停
+    const sr=document.getElementById('stageResult');
+    const srT=document.getElementById('srTitle');
+    const srD=document.getElementById('srDetails');
+    const elapsed=Math.round((Date.now()-bm.stageStartTime)/1000);
+    if(srT){srT.textContent=isBoss?`⚔ BOSS 擊敗！`:`Stage ${bm.stage} 通關！`;srT.style.color=isBoss?'#ffd700':'#0f0';}
+    if(srD){srD.innerHTML=`傷害：${bm.stageDmgDealt.toLocaleString()}<br>累計傷害：${bm.totalDmgDealt.toLocaleString()}<br>用時：${elapsed}秒`;}
+    sr.classList.remove('hidden');
+    document.getElementById('stageNextBtn').dataset.showCard=shouldCard?'1':'0';
+  } else {
+    // 小怪戰，自動進入下一關，顯示預告窗
+    if(shouldCard){
+      showCardOverlay('關卡強化', () => startNextStageWithPreview(nextStage));
+    } else {
+      startNextStageWithPreview(nextStage);
+    }
+  }
+}
+
+function startNextStageWithPreview(nextStage){
+  const nextData = bossGetStageData(nextStage);
+  const ov = document.getElementById('skillPreviewOverlay');
+  const spArt = document.getElementById('spArt');
+  const spName = document.getElementById('spName');
+  const spSkill = document.getElementById('spSkill');
+  const spTimer = document.getElementById('spTimer');
+  
+  spArt.textContent = nextData.data.art;
+  spName.textContent = nextData.data.name;
+  spSkill.textContent = nextData.data.skill;
+  
+  ov.classList.add('active');
+  let count = 4;
+  spTimer.textContent = count;
+  
+  const tick = () => {
+    count--;
+    if(count <= 0){
+      ov.classList.remove('active');
+      bossStartStage(nextStage);
+    } else {
+      spTimer.textContent = count;
+      setTimeout(tick, 1000);
+    }
+  };
+  setTimeout(tick, 1000);
 }
 function bossStartStage(stage){
   bm.stage=stage;
   const sd=bossGetStageData(stage);
   bm.isBoss=sd.isBoss;bm.bossData=sd.data;bm.bossShieldHP=0;
-  bm.stageDmgDealt=0;bm.stageStartTime=Date.now();bm.healTriggered=false;
-  bm.bossMaxHP=stage*5000;
+  bm.stageDmgDealt=0;bm.stageStartTime=Date.now();bm.healTriggeredCount=0;
+  bm.bossMaxHP=stage*3400;
   bm.bossHP=bm.bossMaxHP;
-  bm.COUNTER_BASE=10000;
+  bm.COUNTER_BASE=(sd.isBoss?12000:8000);
   bm.counterTimer=bm.COUNTER_BASE+bm.counterDelayBonus;
   // clear timed effects
   bm.holdSealTimer=bm.darkTimer=bm.reverseTimer=bm.transpTimer=0;
