@@ -1155,19 +1155,39 @@ function bossGameOver(){
   setGoScreen('GAME OVER','#f44',det,'');
 }
 
+    
     function bossAllClear() {
         running = false; cancelAnimationFrame(raf); stopBGM();
         sndGoal(); vib([100, 50, 100, 50, 200]);
         
-        // 氣勢磅礡特效
         let startTime = Date.now();
+        let fireworkCount = 0;
+        const totalFireworks = 8;
+        const fireworkInterval = 500; 
+
+        function launchFirework() {
+            if (fireworkCount >= totalFireworks) return;
+            
+            const x = Math.random() * mainCvs.width;
+            const y = Math.random() * (mainCvs.height * 0.7); 
+            
+            spawnBurstParticles(x, y, '#ffd700', 50, 12); 
+            spawnBurstParticles(x, y, '#fff', 30, 10);
+            spawnBurstParticles(x, y, '#ff4040', 20, 8); 
+            
+            fireworkCount++;
+            if (fireworkCount < totalFireworks) {
+                setTimeout(launchFirework, fireworkInterval);
+            }
+        }
+
+        launchFirework();
+
         function effectLoop() {
-            if (Date.now() - startTime > 5000) {
+            if (Date.now() - startTime > 8000) {
                 showFinalUI();
                 return;
             }
-            spawnBurstParticles(Math.random() * mainCvs.width, Math.random() * mainCvs.height, '#ffd700', 10, 15);
-            spawnBurstParticles(Math.random() * mainCvs.width, Math.random() * mainCvs.height, '#fff', 5, 10);
             draw(16);
             requestAnimationFrame(effectLoop);
         }
