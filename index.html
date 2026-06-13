@@ -380,7 +380,7 @@ const BOSS_BIG_SKILLS=[
   {name:'黑暗制裁',desc:'畫面全黑1秒並封鎖Hold 2秒'},
   {name:'重力壓制',desc:'BOSS受傷降低30%持續4秒'},
   {name:'虛空裂縫',desc:'消除最底下1行方塊'},
-  {name:'能量虹吸',desc:'持續3秒，20%傷害轉換為BOSS護盾'},
+  {name:'能量虹吸',desc:'持續3秒，20%傷害轉化為恢復BOSS血量'},
 ];
 const CARD_POOL=[
 	  {id:'clearBonus', icon:'💡',name:'清除加成I',  desc:'+4%消除傷害（可疊加）',stackable:true},
@@ -1052,9 +1052,8 @@ function bossDealDamage(rawScore,isTspin,isTetris,isAC,nLines){
   dmg=Math.round(dmg);
       if(bm.active && bm.siphonTimer > 0){
         const siphon = Math.round(dmg * 0.2);
-        bm.bossShieldHP += siphon;
-        dmg -= siphon;
-        spawnDmgAnim(`🌀 虹吸 +${siphon.toLocaleString()}`, '#a0f');
+        bm.bossHP = Math.min(bm.bossMaxHP, bm.bossHP + siphon);
+        spawnDmgAnim(`🌀 虹吸恢復 +${siphon.toLocaleString()}`, '#f00');
       }
   if(bm.bossShieldHP>0){
     const abs=Math.min(bm.bossShieldHP,dmg);
