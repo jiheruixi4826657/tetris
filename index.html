@@ -174,37 +174,57 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
 	/* BOSS 狀態右移與超大圖佈局 */
 	#gameWrap { position: relative; }
 	#deskR { display: flex; flex-direction: column; gap: 5px; }
-	#deskRBoss {
-	  position: fixed;
-	  right: 20px;
-	  top: 60px;
-	  width: 220px; /* 加寬面板 */
-	  display: none;
-	  flex-direction: column;
-	  gap: 12px;
-	  z-index: 60;
-	  background: rgba(10, 0, 15, 0.6);
-	  padding: 15px;
-	  border-radius: 12px;
-	  border: 1px solid rgba(255, 50, 100, 0.3);
-	  backdrop-filter: blur(10px);
-	}
-	#monsterView {
-	  width: 100%;
-	  height: 200px; /* 加高頭像區域 */
-	  background: radial-gradient(circle, rgba(40,0,60,0.4) 0%, #000 100%);
-	  border: 2px solid rgba(255, 0, 100, 0.4);
-	  border-radius: 15px;
-	  position: relative;
-	  overflow: visible; /* 讓氣場可以溢出 */
-	  margin-bottom: 10px;
-	  box-shadow: 0 0 30px rgba(255, 0, 100, 0.2);
-	}
-	#monsterArt {
-	  font-size: 8rem !important; /* 超大頭像 */
-	  text-shadow: 0 0 50px rgba(255, 0, 50, 0.8);
-	  z-index: 5;
-	}
+					#deskRBoss {
+						  position: fixed;
+						  right: 0;
+						  top: 0;
+						  bottom: 0;
+						  width: 380px;
+						  display: none;
+						  flex-direction: column;
+						  gap: 15px;
+						  z-index: 60;
+						  background: linear-gradient(135deg, rgba(15, 0, 25, 0.95), rgba(5, 0, 10, 0.98));
+								  padding: 130px 20px 20px; /* 再下移 30px，總計 130px */
+						  border-left: 2px solid rgba(255, 50, 100, 0.4);
+						  backdrop-filter: blur(15px);
+						  box-shadow: -15px 0 60px rgba(0,0,0,0.9);
+						}
+						#monsterView {
+						  width: 100%;
+							  height: 370px; /* 增加高度以配合加粗的外框 */
+							  background: radial-gradient(circle, rgba(80,0,120,0.5) 0%, #000 100%);
+							  border: 8px solid rgba(255, 0, 100, 0.7); /* 外框加粗 5px (3px -> 8px) */
+						  border-radius: 20px;
+						  position: relative;
+						  overflow: visible; /* 允許圖案稍微超出容器而不被切掉 */
+						  display: flex;
+						  align-items: center;
+						  justify-content: center;
+						  margin-bottom: 10px;
+						  box-shadow: 0 0 50px rgba(255, 0, 100, 0.4);
+						}
+					#monsterArt {
+					  font-size: 16rem !important; /* 最大化圖片 */
+					  line-height: 1;
+					  text-shadow: 0 0 80px rgba(255, 0, 50, 0.9);
+					  z-index: 5;
+					  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+					}
+				#deskLBossCards {
+				  position: fixed;
+				  left: 10px;
+				  top: 60px;
+				  width: 120px;
+				  display: none;
+				  flex-direction: column;
+				  gap: 10px;
+				  z-index: 60;
+				  background: rgba(0, 0, 0, 0.5);
+				  padding: 10px;
+				  border-radius: 10px;
+				  border: 1px solid rgba(255, 215, 0, 0.2);
+				}
 	#monsterAura {
 	  position: absolute; inset: -20px;
 	  background: radial-gradient(circle at center, rgba(255,0,50,0.3) 0%, transparent 70%);
@@ -588,33 +608,42 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
 	    </div>
 	  </div>
 	  
-	  <!-- BOSS 狀態面板移至最右側 -->
-	  <div id="deskRBoss">
-		      <div id="monsterView">
-		        <div id="monsterAura"></div>
-			        <div id="monsterArt">👹</div>
-		        <div id="monsterHitFlash"></div>
-		      </div>
-		      <div id="bmName" style="font-size:1.1rem;color:#f66;text-align:center;font-weight:bold;letter-spacing:1px"></div>
-		      <div id="bmStage" style="font-size:.8rem;color:#888;text-align:center"></div>
-	      <div style="padding:0 3px">
-	        <div style="height:12px;background:#2a0010;border-radius:6px;overflow:hidden;border:1px solid #422">
-	          <div id="bmHPFill" style="height:100%;background:linear-gradient(90deg,#ff1010,#ff6040);border-radius:6px;width:100%;transition:width .25s"></div>
-	        </div>
-	        <div id="bmHPNum" style="font-size:.9rem;color:#f88;text-align:center;margin-top:4px;font-family:monospace"></div>
-	      </div>
-		      <div id="bmSkills" style="font-size:.8rem;color:#ff99aa;text-align:center;line-height:1.5;border-top:1px solid #422;padding-top:8px;margin-top:5px"></div>
-			      <div id="cdRingContainer" style="position:relative;width:60px;height:60px;margin:10px auto;pointer-events:none;z-index:1;">
-			        <svg width="60" height="60" viewBox="0 0 50 50">
-			          <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6" />
-			          <circle id="cdRingCircle" cx="25" cy="25" r="20" fill="none" stroke="#fa0" stroke-width="6" 
-			            stroke-dasharray="125.6" stroke-dashoffset="0" stroke-linecap="round"
-			            transform="rotate(-90 25 25)" />
-			        </svg>
-			      </div>
-		      <div id="bmDebuff" style="font-size:.8rem;color:#f88;text-align:center;min-height:1.2em;line-height:1.6"></div>
-	      <div id="bmCards" style="font-size:.75rem;color:#aaa;text-align:center;line-height:1.6;border-top:1px solid #422;padding-top:5px;min-height:1.2em"></div>
-	  </div>
+		  <!-- BOSS 狀態面板移至最右側 -->
+		  <div id="deskLBossCards">
+		    <div style="font-size:0.8rem;color:#ffd700;border-bottom:1px solid #442;padding-bottom:5px;margin-bottom:8px;text-align:center">已獲卡片</div>
+		    <div id="bmCards" style="font-size:0.75rem;color:#aaa;line-height:1.6;min-height:1.2em"></div>
+		  </div>
+			  <div id="deskRBoss">
+				      <div id="monsterView">
+				        <div id="monsterAura"></div>
+					        <div id="monsterArt">👹</div>
+				        <div id="monsterHitFlash"></div>
+				      </div>
+				      <div id="bmName" style="font-size:2.2rem;color:#f66;text-align:center;font-weight:bold;letter-spacing:2px;text-shadow:0 0 15px rgba(255,0,0,0.4)"></div>
+				      <div id="bmStage" style="font-size:1.3rem;color:#888;text-align:center;margin-bottom:8px"></div>
+				      <div style="padding:0 5px">
+				        <div style="height:24px;background:#2a0010;border-radius:12px;overflow:hidden;border:1px solid #422;box-shadow:0 0 15px rgba(255,0,0,0.3)">
+				          <div id="bmHPFill" style="height:100%;background:linear-gradient(90deg,#ff1010,#ff6040);border-radius:12px;width:100%;transition:width .25s"></div>
+				        </div>
+				        <div id="bmHPNum" style="font-size:1.5rem;color:#f88;text-align:center;margin-top:8px;font-family:monospace;font-weight:bold"></div>
+				      </div>
+				      
+				      <!-- 下方技能與 CD 區域 -->
+				      <div style="display:flex; align-items:center; margin-top:20px; gap:15px; border-top:2px solid #422; padding-top:20px;">
+					      <div id="cdRingContainer" style="position:relative;width:110px;height:110px;flex-shrink:0;">
+					        <svg width="110" height="110" viewBox="0 0 50 50">
+					          <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="5" />
+					          <circle id="cdRingCircle" cx="25" cy="25" r="20" fill="none" stroke="#fa0" stroke-width="5" 
+					            stroke-dasharray="125.6" stroke-dashoffset="0" stroke-linecap="round"
+					            transform="rotate(-90 25 25)" />
+					        </svg>
+					        <div id="cdCountdown" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.6rem; color:#fa0; font-weight:bold; font-family:monospace;">5.0</div>
+					      </div>
+					      <div id="bmSkills" style="flex:1; font-size:1rem; color:#ff99aa; text-align:left; line-height:1.4; font-weight:bold; text-shadow:0 0 10px rgba(255,153,170,0.5)"></div>
+				      </div>
+				      
+			      <div id="bmDebuff" style="font-size:1.4rem;color:#f88;text-align:center;min-height:1.2em;line-height:1.4;margin-top:10px"></div>
+			  </div>
   <div id="landPanel">
     <div class="box hud-frame"><div class="lbl">HOLD</div><canvas class="mini-cvs" id="holdL" width="84" height="56"></canvas></div>
     <div class="box" style="display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px">
@@ -688,11 +717,11 @@ const SMALL_MONSTERS=[
   {id:16,name:'石像鬼', art:'🗿', skill:'石化：魔物冷眼干擾1秒', skillId:'gargoyleGaze'},
   {id:17,name:'冥河擺渡人', art:'⛵', skill:'擺渡：清空畫面方塊後離開', skillId:'clearBoardExit'},
   {id:18,name:'亡靈祭司', art:'🦴', skill:'神聖治療：白光閃爍2次+Holy Heal音效、回血20%', skillId:'holyHeal20'},
-  {id:19,name:'地獄犬', art:'🐕', skill:'咆哮：吼吼吼干擾1秒', skillId:'dogBark'},
+  {id:19,name:'地獄犬', art:'🐕', skill:'吼吼吼：狗狗叫聲干擾', skillId:'dogBark'},
   {id:20,name:'深淵魔將', art:'⚔️', skill:'魔將：畫面晃動8秒', skillId:'shake8'},
   {id:21,name:'光翼天使', art:'👼', skill:'光羽：傷害降低40%持續8秒', skillId:'dmgDebuff40'},
   {id:22,name:'聖堂守衛', art:'🛡️', skill:'聖盾：僅Combo可造成傷害6秒', skillId:'comboOnly'},
-  {id:23,name:'晨曦天使', art:'🌅', skill:'晨曦：隨機列無法消除3秒', skillId:'rowSeal'},
+  {id:23,name:'晨曦天使', art:'🌅', skill:'晨曦：50%機率清空Hold', skillId:'rowSeal'},
   {id:24,name:'聖光使徒', art:'⛪', skill:'聖縛：軟降速度降低200%、硬降封鎖（空白鍵失效）6秒', skillId:'dropSeal'},
   {id:25,name:'熾天使米迦勒', art:'✨', skill:'熾天：遮擋畫面上方30%持續2秒', skillId:'topMask'},
   {id:26,name:'雷霆天使', art:'⚡', skill:'雷霆：下降速度增加150%持續3秒', skillId:'speedBoost'},
@@ -811,16 +840,22 @@ function updateBossHUD(){
       mView.style.boxShadow = `inset 0 0 40px ${color}22`;
       mArt.style.filter = `drop-shadow(0 0 15px ${color}aa)`;
       
-      // SVG 環形進度條更新
-      const cdCircle = document.getElementById('cdRingCircle');
-      if(cdCircle){
-        const ringPct = Math.max(0, bm.counterTimer / (bm.COUNTER_BASE + bm.counterDelayBonus));
-        const circumference = 2 * Math.PI * 20; // r=20
-        const offset = circumference * (1 - ringPct);
-        cdCircle.style.stroke = color;
-        cdCircle.style.strokeDashoffset = offset;
-      }
-    }
+	      // SVG 環形進度條更新
+	      const cdCircle = document.getElementById('cdRingCircle');
+	      if(cdCircle){
+	        const ringPct = Math.max(0, bm.counterTimer / (bm.COUNTER_BASE + bm.counterDelayBonus));
+	        const circumference = 2 * Math.PI * 20; // r=20
+	        const offset = circumference * (1 - ringPct);
+	        cdCircle.style.stroke = color;
+	        cdCircle.style.strokeDashoffset = offset;
+	        
+	        const cdNum = document.getElementById('cdCountdown');
+	        if(cdNum) {
+	          cdNum.textContent = (bm.counterTimer/1000).toFixed(1);
+	          cdNum.style.color = color;
+	        }
+	      }
+	    }
 
   const bmN=document.getElementById('bmName');if(bmN)bmN.textContent=bm.bossData?bm.bossData.name:'';
   const bmS=document.getElementById('bmStage');if(bmS)bmS.textContent=`Stage ${bm.stage}/42 ${bm.isBoss?'⚠ BOSS':''}`;
@@ -1065,8 +1100,14 @@ function bossApplySmallSkill(skillId){
 
   switch(skillId){
     case 'hideNextPiece': bm.hideNextTimer = 3000; break;
-    case 'goblinGiggle': showMonsterText('咯咯咯咯咯咯', '#0f0', 1000); break;
-    case 'skeletonTaunt': showMonsterText('放棄吧勇者', '#fff', 1000); break;
+    case 'goblinGiggle': 
+      showMonsterText('咯咯咯咯咯咯', '#0f0', 1000);
+      for(let i=0;i<5;i++) osc(800+Math.random()*600,'sawtooth',i*.05,.05,.2,1200);
+      break;
+    case 'skeletonTaunt': 
+      showMonsterText('放棄吧勇者', '#fff', 1000);
+      for(let i=0;i<4;i++) noise(i*.08,.06,200,1.5,.3);
+      break;
     case 'comboDown2': combo = Math.max(-1, combo - 2); break;
     case 'skeletonVision': bm.skeletonVisionTimer = 3000; break;
     case 'rotSeal2': bm.rotSealTimer = 2000; break;
@@ -1075,7 +1116,12 @@ function bossApplySmallSkill(skillId){
     case 'shake4': startScreenShake(4000); break;
     case 'darkReset': bm.darkTimer = 1500; combo = -1; break;
     case 'onlyI': bm.onlyITimer = 2000; break;
-    case 'dmgDebuff20': bm.dmgDebuffMult = 0.8; bm.dmgDebuffTimer = 3000; break;
+    case 'dmgDebuff20': 
+      bm.dmgDebuffMult = 0.8; 
+      bm.dmgDebuffTimer = 3000; 
+      // 瘟疫醫生：3秒後恢復正常
+      setTimeout(() => { if(bm.dmgDebuffTimer <= 0) bm.dmgDebuffMult = 1.0; }, 3100);
+      break;
     case 'hideNextArea': bm.hideNextTimer = 4000; break;
     case 'gargoyleGaze': showMonsterText('被魔物冷眼看了一下', '#aaa', 1000); break;
     case 'clearBoardExit':
@@ -1113,6 +1159,8 @@ function bossApplySmallSkill(skillId){
     case 'dogBark': 
       showMonsterText('吼吼吼', '#f60', 1000);
       bm.dogVisionTimer = 1000;
+      osc(150,'sawtooth',0,.1,.5,80); noise(0,.15,400,1,.4);
+      setTimeout(()=>{ osc(130,'sawtooth',0,.12,.5,70); noise(0,.18,350,1,.4); }, 200);
       break;
     case 'shake8': startScreenShake(8000); break;
     case 'dmgDebuff40': bm.dmgDebuffMult = 0.6; bm.dmgDebuffTimer = 8000; break;
@@ -1369,9 +1417,15 @@ function bossDealDamage(rawScore,isTspin,isTetris,isAC,nLines){
 }
 function bossStageCleared(){
   running=false;cancelAnimationFrame(raf);
-  // 停止所有晃動效果
+  // 停止所有晃動與清除遮罩
   if(bm.shakeIntervalId){clearInterval(bm.shakeIntervalId);bm.shakeIntervalId=null;}
   const gw=document.getElementById('gameWrap');if(gw)gw.style.transform='';
+  const blackout = document.getElementById('blackoutOverlay');
+  if(blackout) blackout.style.display = 'none';
+  const topMask = document.getElementById('topMaskOverlay');
+  if(topMask) topMask.style.display = 'none';
+  const msgTxt = document.getElementById('msgTxt');
+  if(msgTxt) msgTxt.classList.remove('show');
   bm.stagesCleared++;
   const nextStage = bm.stage + 1;
   const BOSS_STAGES = [6, 12, 18, 24, 30, 36, 42];
@@ -1443,8 +1497,8 @@ function bossStartStage(stage){
   bm.bossMaxHP = sd.isBoss ? (stage * 3400) : (stage * 1000);
   bm.bossHP=bm.bossMaxHP;
   running=true;paused=false;lastTs=performance.now();
-  bm.COUNTER_BASE=(sd.isBoss?12000:8000);
-  bm.counterTimer=bm.COUNTER_BASE+bm.counterDelayBonus;
+  bm.COUNTER_BASE=(sd.isBoss?12000:8000) + bm.counterDelayBonus;
+  bm.counterTimer=bm.COUNTER_BASE;
   
   // 確保面板正確切換
   const dNorm=document.getElementById('deskRNorm'), dBoss=document.getElementById('deskRBoss');
@@ -2453,8 +2507,10 @@ function resize(){
   document.getElementById('btlNextBox').style.display=(lay==='desk'&&isBattle)?'block':'none';
   const isBoss=curMode==='boss'&&running;
   document.getElementById('deskR').style.display=(lay==='desk'&&!isBattle)?'flex':'none';
-  document.getElementById('deskRNorm').style.display=(isBoss)?'none':'flex';
-  document.getElementById('deskRBoss').style.display=(isBoss&&lay==='desk')?'flex':'none';
+	  document.getElementById('deskRNorm').style.display=(isBoss)?'none':'flex';
+	  document.getElementById('deskRBoss').style.display=(isBoss&&lay==='desk')?'flex':'none';
+	  const lCards = document.getElementById('deskLBossCards');
+	  if(lCards) lCards.style.display=(isBoss&&lay==='desk')?'flex':'none';
   document.getElementById('bossTopBar').style.display=(isBoss&&lay!=='desk')?'flex':(isBoss?'flex':'none');
   document.getElementById('mHUD').style.display=(lay==='port'&&!isBattle)?'flex':'none';
   document.getElementById('portRight').style.display=lay==='port'?'flex':'none';
@@ -2474,11 +2530,13 @@ function resize(){
     else if(lay==='port'){Object.assign(gw.style,{bottom:PORT_BOT+'px',right:PORT_RP+'px'});CELL=Math.max(10,Math.min(Math.floor(((W-PORT_RP)*0.54-6)/COLS),Math.floor((H-PORT_TOP-PORT_BOT-4)/ROWS),22));AI_CELL=Math.max(8,Math.min(Math.floor(((W-PORT_RP)*0.42-6)/COLS),Math.floor((H-PORT_TOP-PORT_BOT-4)/ROWS),18));}
     else{Object.assign(gw.style,{bottom:'0'});CELL=Math.max(10,Math.min(Math.floor((W/2-50)/COLS),Math.floor((H-6)/ROWS),24));AI_CELL=CELL;}
     if(aiCvs){aiCvs.width=COLS*AI_CELL;aiCvs.height=ROWS*AI_CELL;}
-  } else if(lay==='desk'){
-    const topOff=isBoss?'46px':'0';
-    Object.assign(gw.style,{top:topOff,bottom:'0',left:'0',right:'0',alignItems:'flex-start',justifyContent:'center',flexDirection:'row'});
-    const usableH=H-(isBoss?46:0);
-    CELL=Math.max(14,Math.min(Math.floor((W-88*2-24)/COLS),Math.floor((usableH-8)/ROWS),40));
+	  } else if(lay==='desk'){
+	    const topOff=isBoss?'46px':'0';
+	    const rightOff=isBoss?'380px':'0'; // 配合新的 380px 寬度
+	    Object.assign(gw.style,{top:topOff,bottom:'0',left:isBoss?'120px':'0',right:rightOff,alignItems:'center',justifyContent:'center',flexDirection:'row'});
+	    const usableH=H-(isBoss?46:0);
+	    const usableW=W-(isBoss?500:88*2)-24; // 扣除左右面板後的寬度
+	    CELL=Math.max(14,Math.min(Math.floor(usableW/COLS),Math.floor((usableH-8)/ROWS),40));
   } else if(lay==='port'){
     const ptop=isBoss?46:PORT_TOP;
     Object.assign(gw.style,{top:ptop+'px',bottom:PORT_BOT+'px',left:'0',right:PORT_RP+'px',alignItems:'center',justifyContent:'center',flexDirection:'row'});
