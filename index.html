@@ -176,7 +176,8 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
 .card-choice.disabled-card{opacity:.4;cursor:not-allowed}
 .card-choice .ci{font-size:1.5rem}.card-choice .cn{font-size:.65rem;color:#ffd700;font-weight:bold;letter-spacing:1px;line-height:1.3}.card-choice .cd{font-size:.48rem;color:#777;line-height:1.4}
 	#stageResult{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:199;padding:16px;backdrop-filter:blur(4px);}
-	#stageResult.active{display:flex;}
+	#stageResult.active{display:flex!important;}
+	#stageResult.hidden{display:none!important;}
 	#skillPreviewOverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(4px);color:#fff;text-align:center;}
 	#skillPreviewOverlay.active{display:flex;}
 	#skillPreviewOverlay #spArt{font-size:4rem;margin:10px 0;filter:drop-shadow(0 0 20px rgba(255,255,255,0.4));}
@@ -255,6 +256,40 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
 	  position:fixed;width:4px;height:4px;border-radius:50%;opacity:0.6;z-index:149;pointer-events:none;
 	}
 	@keyframes trailFade{0%{transform:scale(1.5);opacity:0.6}100%{transform:scale(0);opacity:0}}
+
+/* 熾天使米迦勒：遠蔽上方 5 格视野 */
+#topMaskOverlay{
+  display:none;
+  position:absolute;
+  top:0;left:0;right:0;
+  pointer-events:none;
+  z-index:78;
+  background:linear-gradient(180deg,rgba(255,240,180,0.92) 0%,rgba(255,220,100,0.85) 60%,rgba(255,200,50,0.0) 100%);
+  box-shadow:0 0 30px rgba(255,220,100,0.7),0 0 60px rgba(255,180,0,0.4);
+}
+
+/* 怪物文字跳出效果（哥布林、骷髏士兵、石像鬼等） */
+#monsterTextOverlay{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;z-index:86;
+  font-size:clamp(1.6rem,8vw,3.2rem);
+  font-weight:bold;
+  letter-spacing:4px;
+  text-align:center;
+  opacity:0;
+  transition:opacity 0.08s;
+  text-shadow:0 0 20px currentColor,0 0 40px currentColor;
+  font-family:'Courier New',monospace;
+}
+#monsterTextOverlay.show{opacity:1;}
+@keyframes monsterTextPop{
+  0%{transform:scale(0.5);opacity:0}
+  30%{transform:scale(1.15);opacity:1}
+  70%{transform:scale(1.0);opacity:1}
+  100%{transform:scale(0.9);opacity:0}
+}
+#monsterTextOverlay.show{animation:monsterTextPop var(--pop-dur,1s) ease-out forwards;}
 	</style>
 </head>
 <body>
@@ -398,7 +433,7 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
 	<div id="stageResult">
 	  <div id="srTitle" style="font-size:1.3rem;letter-spacing:3px;font-weight:bold"></div>
 	  <div id="srDetails" style="font-size:.78rem;color:#aaa;text-align:center;line-height:2"></div>
-	  <button class="btn" id="stageNextBtn" onclick="onStageNext()">繼續</button>
+	  <button class="btn" id="stageNextBtn">繼續</button>
 	</div>
 		<div id="skillPreviewOverlay">
 		  <div style="font-size:0.8rem;color:#888;letter-spacing:2px">NEXT CHALLENGER</div>
@@ -453,6 +488,7 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
   <div class="hdt">瞬降</div>
 </div>
 <!-- Game area -->
+<div id="monsterTextOverlay"></div>
     <div id="gameWrap">
       <div id="topMaskOverlay"></div>
   <div id="holySwordOverlay">
@@ -643,8 +679,10 @@ const bm={
 	  hideNextTimer:0,holdSealTimer:0,darkTimer:0,reverseTimer:0,
 	  rotSealTimer:0, colorPoisonTimer:0, shakeTimer:0, onlyITimer:0,
 	  comboOnlyTimer:0, rowSealTimer:0, sealedRow:-1, dropSealTimer:0,
-	  autoHealTimer:0, grayScaleTimer:0, 
+	  autoHealTimer:0, grayScaleTimer:0,
+	  topMaskTimer:0, skeletonVisionTimer:0,
 	  hideBlocksTimer:0,
+	  shakeIntervalId:null, shakeIntervalAcc:0,
   transpTimer:0,gravBoostTimer:0,fastLockTimer:0,dasSlowTimer:0,shakeAcc:0,
   inputIgnoreTimer:0,rotDelayTimer:0,deformTimer:0,blockCenterTimer:0,blockBottomTimer:0,
   attackFlash:{timer:0,name:'',col:'#ff4040'},
@@ -752,10 +790,12 @@ function updateBossHUD(){
     if(bm.grayScaleTimer>0)d.push(`🏛️聖域`);
     bmD.textContent=d.length?d.join(' '):'';
   }
-  // topMask 視覺遮蔽
+  // topMask 視覺遮蔽（熾天使米迦動：遠蔽上方 5 格）
   const mask = document.getElementById('topMaskOverlay');
   if(mask){
     if(bm.active && bm.topMaskTimer > 0){
+      const maskH = CELL * 5;
+      mask.style.height = maskH + 'px';
       mask.style.display = 'block';
     } else {
       mask.style.display = 'none';
@@ -893,6 +933,44 @@ function triggerMonsterHit(type) {
   }
 }
 
+// ── 怪物文字跳出效果（獨立於 msgTxt，使用全螢幕大字）──
+function showMonsterText(txt, col, duration){
+  const el = document.getElementById('monsterTextOverlay');
+  if(!el) return;
+  const dur = (duration || 1000);
+  el.style.setProperty('--pop-dur', dur + 'ms');
+  el.textContent = txt;
+  el.style.color = col || '#ff0';
+  // 重置動畫
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  clearTimeout(el._hideTO);
+  el._hideTO = setTimeout(() => el.classList.remove('show'), dur);
+}
+
+// ── 整體畫面左右晃動（0.5秒頻率，持續 durationMs 毫秒）──
+function startScreenShake(durationMs){
+  const gw = document.getElementById('gameWrap');
+  if(!gw) return;
+  if(bm.shakeIntervalId){ clearInterval(bm.shakeIntervalId); bm.shakeIntervalId=null; }
+  bm.shakeTimer = durationMs;
+  let phase = 0;
+  const SHAKE_DIST = 8;
+  function doShakeStep(){
+    if(bm.shakeTimer <= 0){
+      clearInterval(bm.shakeIntervalId);
+      bm.shakeIntervalId = null;
+      gw.style.transform = '';
+      return;
+    }
+    phase = (phase + 1) % 2;
+    gw.style.transform = phase === 0 ? `translateX(${SHAKE_DIST}px)` : `translateX(-${SHAKE_DIST}px)`;
+  }
+  doShakeStep();
+  bm.shakeIntervalId = setInterval(doShakeStep, 500);
+}
+
 function bossApplySmallSkill(skillId){
   if(bm.ironWillCharges>0){bm.ironWillCharges--;spawnDmgAnim('🛡️ 抵銷！','#fff');return;}
   
@@ -904,19 +982,19 @@ function bossApplySmallSkill(skillId){
 
   switch(skillId){
     case 'hideNextPiece': bm.hideNextTimer = 3000; break;
-    case 'goblinGiggle': msg('咯咯咯咯咯咯', '#0f0'); bm.inputIgnoreTimer = 1000; break;
-    case 'skeletonTaunt': msg('放棄吧勇者', '#fff'); bm.inputIgnoreTimer = 1000; break;
+    case 'goblinGiggle': showMonsterText('咯咯咯咯咯咯', '#0f0', 1000); break;
+    case 'skeletonTaunt': showMonsterText('放棄吧勇者', '#fff', 1000); break;
     case 'comboDown2': combo = Math.max(-1, combo - 2); break;
-    case 'skeletonVision': bm.darkTimer = 3000; break;
+    case 'skeletonVision': bm.skeletonVisionTimer = 3000; break;
     case 'rotSeal2': bm.rotSealTimer = 2000; break;
     case 'colorPoison': bm.colorPoisonTimer = 3000; break;
     case 'holdSeal2': bm.holdSealTimer = 2000; break;
-    case 'shake4': bm.shakeTimer = 4000; triggerShake(); break;
+    case 'shake4': startScreenShake(4000); break;
     case 'darkReset': bm.darkTimer = 1500; combo = -1; break;
     case 'onlyI': bm.onlyITimer = 2000; break;
     case 'dmgDebuff20': bm.dmgDebuffMult = 0.8; bm.dmgDebuffTimer = 3000; break;
     case 'hideNextArea': bm.hideNextTimer = 4000; break;
-    case 'gargoyleGaze': msg('被魔物冷眼看了一下', '#888'); bm.inputIgnoreTimer = 1000; break;
+    case 'gargoyleGaze': showMonsterText('被魔物冷眼看了一下', '#aaa', 1000); break;
     case 'clearBoardExit':
       if (bm.clearBoardExitUsed) { msg('冥河擺渡人：技能已使用', '#888'); return; }
       bm.clearBoardExitUsed = true;
@@ -944,7 +1022,7 @@ function bossApplySmallSkill(skillId){
       break;
     }
     case 'dogBark': msg('吼吼吼', '#f60'); bm.inputIgnoreTimer = 1000; break;
-    case 'shake8': bm.shakeTimer = 8000; triggerShake(); break;
+    case 'shake8': startScreenShake(8000); break;
     case 'dmgDebuff40': bm.dmgDebuffMult = 0.6; bm.dmgDebuffTimer = 8000; break;
     case 'comboOnly': bm.comboOnlyTimer = 6000; break;
     case 'rowSeal': bm.rowSealTimer = 3000; bm.sealedRow = Math.floor(Math.random()*ROWS)+HIDDEN; break;
@@ -1039,6 +1117,26 @@ function drawBossFlash(dt){
   }
   mainCtx.restore();
 }
+// ID 5 骷髏王：骷髏幻影閃爍效果（以 0.3 秒頻率半透明巨大骷髏畫面閃爍 3 秒）
+function drawSkeletonVision(dt){
+  if(!bm.active||bm.skeletonVisionTimer<=0)return;
+  const period = 300;
+  const phase = (Date.now() % period) / period;
+  const alpha = phase < 0.5 ? (0.20 + 0.15 * Math.sin(phase * Math.PI * 2)) : 0;
+  if(alpha <= 0) return;
+  mainCtx.save();
+  mainCtx.globalAlpha = alpha;
+  const fontSize = Math.round(mainCvs.height * 0.85);
+  mainCtx.font = `bold ${fontSize}px serif`;
+  mainCtx.textAlign = 'center';
+  mainCtx.textBaseline = 'middle';
+  mainCtx.shadowColor = 'rgba(200,200,200,0.6)';
+  mainCtx.shadowBlur = 40;
+  mainCtx.fillStyle = 'rgba(220,220,220,1)';
+  mainCtx.fillText('\uD83D\uDC80', mainCvs.width / 2, mainCvs.height / 2);
+  mainCtx.restore();
+}
+
 function bossTriggerCounterAttack(){
   if(!bm.active||bm.bossHP<=0)return;
   if(bm.ironWillCharges>0){bm.ironWillCharges--;spawnDmgAnim('🛡️ 抵銷！','#fff');updateBossHUD();return;}
@@ -1152,31 +1250,36 @@ function bossDealDamage(rawScore,isTspin,isTetris,isAC,nLines){
 }
 function bossStageCleared(){
   running=false;cancelAnimationFrame(raf);
+  // 停止所有晃動效果
+  if(bm.shakeIntervalId){clearInterval(bm.shakeIntervalId);bm.shakeIntervalId=null;}
+  const gw=document.getElementById('gameWrap');if(gw)gw.style.transform='';
   bm.stagesCleared++;
   const nextStage = bm.stage + 1;
   const BOSS_STAGES = [6, 12, 18, 24, 30, 36, 42];
   const isTargetBoss = BOSS_STAGES.includes(bm.stage);
   const shouldCard = (bm.stage % 5 === 0) || isTargetBoss;
 
-  // 如果是 BOSS 關卡結束，顯示 StageResult (詢問是否繼續戰鬥)
   if (isTargetBoss) {
+    // BOSS 關卡結束：顯示結果畫面
     const sr = document.getElementById('stageResult');
     const srT = document.getElementById('srTitle');
     const srD = document.getElementById('srDetails');
     const elapsed = Math.round((Date.now() - bm.stageStartTime) / 1000);
-    if (srT) { srT.textContent = `⚔ BOSS 擊敗！`; srT.style.color = '#ffd700'; }
-    if (srD) { srD.innerHTML = `傷害：${bm.stageDmgDealt.toLocaleString()}<br>累計傷害：${bm.totalDmgDealt.toLocaleString()}<br>用時：${elapsed}秒<br><br><span style="color:#0f0">是否繼續前往下一關？</span>`; }
-    sr.classList.add('active');
-    const nextBtn = document.getElementById('stageNextBtn');
-    nextBtn.textContent = "繼續戰鬥";
-    nextBtn.onclick = () => {
-      sr.classList.remove('active');
-      if (nextStage > 42) bossAllClear();
+    if(srT){ srT.textContent = '⚔ BOSS 擊敗！'; srT.style.color = '#ffd700'; }
+    if(srD){ srD.innerHTML = `傷害：${bm.stageDmgDealt.toLocaleString()}<br>累計傷害：${bm.totalDmgDealt.toLocaleString()}<br>用時：${elapsed}秒<br><br><span style="color:#0f0">是否繼續前往下一關？</span>`; }
+    // 設置 _pendingNext，由 addEventListener 來呼叫
+    bm._pendingNext = () => {
+      if(nextStage > 42) bossAllClear();
       else startNextStageWithPreview(nextStage, shouldCard);
     };
+    const nextBtn = document.getElementById('stageNextBtn');
+    if(nextBtn) nextBtn.textContent = '繼續戰鬥';
+    // 確保元素可見：移除 hidden 並加上 active
+    sr.classList.remove('hidden');
+    sr.classList.add('active');
   } else {
-    // 小怪關卡結束，直接顯示 4 秒倒數預覽
-    if (nextStage > 42) bossAllClear();
+    // 小怪關卡結束：直接進入下一關
+    if(nextStage > 42) bossAllClear();
     else startNextStageWithPreview(nextStage, shouldCard);
   }
 }
@@ -1231,6 +1334,8 @@ function bossStartStage(stage){
 	  bm.inputIgnoreTimer=bm.rotDelayTimer=0;
 	  bm.rotSealTimer=bm.colorPoisonTimer=bm.shakeTimer=bm.onlyITimer=0;
 	  bm.comboOnlyTimer=bm.rowSealTimer=bm.dropSealTimer=bm.autoHealTimer=bm.grayScaleTimer=0;
+	  bm.topMaskTimer=bm.skeletonVisionTimer=0;
+	  if(bm.shakeIntervalId){clearInterval(bm.shakeIntervalId);bm.shakeIntervalId=null;}bm.shakeIntervalAcc=0;
 	  bm.dmgDebuffMult=1.0;bm.dmgDebuffTimer=0;bm.attackFlash={timer:0,name:'',col:'#ff4040'};
   bm.dmgAnims=[];
   updateBossHUD();
@@ -2175,6 +2280,8 @@ function draw(dt){
   if(bm.active){
     drawBossFlash(dt||0);
     drawBossDmgAnims(dt||0);
+    // ID 5 骷髏王：骷髏幻影閃爍效果
+    if(bm.skeletonVisionTimer>0)drawSkeletonVision(dt||0);
   }
   drawHoldTo(holdDctx,holdD);drawHoldTo(holdPctx,holdP);drawHoldTo(holdLctx,holdL);if(holdBtlCtx&&holdBtl)drawHoldTo(holdBtlCtx,holdBtl);const hideNext=bm.active&&bm.hideNextTimer>0;
 if(!hideNext){drawNextTo(nextDctx,nextD,NEXT_N);drawNextTo(nextPctx,nextP,3);drawNextTo(nextLctx,nextL,3);}
@@ -2337,7 +2444,13 @@ function loop(ts){raf=requestAnimationFrame(loop);if(!running||paused)return;con
       if(bm.dmgDebuffTimer>0){bm.dmgDebuffTimer-=dt;if(bm.dmgDebuffTimer<=0)bm.dmgDebuffMult=1.0;}
       if(bm.holdSealTimer>0)bm.holdSealTimer-=dt;
       if(bm.darkTimer>0)bm.darkTimer-=dt;
-      if(bm.shakeTimer>0)bm.shakeTimer-=dt;
+      if(bm.shakeTimer>0){
+        bm.shakeTimer-=dt;
+        if(bm.shakeTimer<=0&&bm.shakeIntervalId){
+          clearInterval(bm.shakeIntervalId);bm.shakeIntervalId=null;
+          const gw=document.getElementById('gameWrap');if(gw)gw.style.transform='';
+        }
+      }
       if(bm.rotSealTimer>0)bm.rotSealTimer-=dt;
       if(bm.colorPoisonTimer>0)bm.colorPoisonTimer-=dt;
       if(bm.onlyITimer>0)bm.onlyITimer-=dt;
@@ -2345,6 +2458,7 @@ function loop(ts){raf=requestAnimationFrame(loop);if(!running||paused)return;con
       if(bm.rowSealTimer>0)bm.rowSealTimer-=dt;
       if(bm.dropSealTimer>0)bm.dropSealTimer-=dt;
       if(bm.topMaskTimer>0)bm.topMaskTimer-=dt;
+      if(bm.skeletonVisionTimer>0)bm.skeletonVisionTimer-=dt;
       if(bm.speedBoostTimer>0)bm.speedBoostTimer-=dt;
       if(bm.autoHealTimer>0){
         bm.autoHealTimer-=dt;
@@ -2390,7 +2504,9 @@ window.addEventListener('keydown',e=>{if(kbListen===null)return;if(e.code==='Esc
 function openSett(){if(running&&!paused){paused=true;stopBGM();}document.getElementById('settWrap').classList.remove('hidden');buildKbTbl();document.getElementById('sLvSlider').value=level;document.getElementById('sLvVal').textContent=level;document.getElementById('sLvRow').style.display=MODES[curMode].diffFixed?'flex':'none';document.getElementById('volSlider').value=Math.round(sfxVol*100);document.getElementById('volVal').textContent=Math.round(sfxVol*100)+'%';}
 function closeSett(){kbListen=null;document.getElementById('settWrap').classList.add('hidden');if(running&&paused){paused=false;lastTs=performance.now();if(bgmEnabled)startBGM();}}
 function startBossMode(){
-  ['startScreen','goScreen','settWrap','pauseOverlay','cardOverlay','stageResult','bossEnding'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
+  ['startScreen','goScreen','settWrap','pauseOverlay','cardOverlay','bossEnding'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
+  // 確保 stageResult 初始狀態正確
+  const srInit=document.getElementById('stageResult');if(srInit){srInit.classList.remove('active');srInit.classList.add('hidden');}
   stopBGM();
   board=newBoard();bag=[];nextQ=[];held=null;holdUsed=false;
   pops=[];particles=[];tspinPulse={active:false,age:0,cx:0,cy:0};
@@ -2421,7 +2537,7 @@ function startBossMode(){
   bossStartStage(1);
   if(bgmEnabled)startBGM();
 }
-function goMenu(){document.getElementById('startScreen').classList.remove('hidden');document.getElementById('gearBtn').style.display='none';document.getElementById('dangerBar').style.display='none';document.getElementById('battleTopHUD').style.display='none';document.getElementById('bossTopBar').style.display='none';document.getElementById('aiCanvas').style.display='none';document.getElementById('vsEl').style.display='none';['cardOverlay','stageResult','bossEnding'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});bm.active=false;updateBestDisplay();resize();}
+function goMenu(){document.getElementById('startScreen').classList.remove('hidden');document.getElementById('gearBtn').style.display='none';document.getElementById('dangerBar').style.display='none';document.getElementById('battleTopHUD').style.display='none';document.getElementById('bossTopBar').style.display='none';document.getElementById('aiCanvas').style.display='none';document.getElementById('vsEl').style.display='none';['cardOverlay','bossEnding'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});const srGo=document.getElementById('stageResult');if(srGo){srGo.classList.remove('active');srGo.classList.add('hidden');}if(bm.shakeIntervalId){clearInterval(bm.shakeIntervalId);bm.shakeIntervalId=null;}const gwGo=document.getElementById('gameWrap');if(gwGo)gwGo.style.transform='';bm.active=false;updateBestDisplay();resize();}
 // START
 function startGame(){if(curMode==='learn'){openLearnScreen();return;}
   if(curMode==='boss'){startBossMode();return;}['startScreen','goScreen','settWrap','pauseOverlay'].forEach(id=>document.getElementById(id).classList.add('hidden'));stopBGM();board=newBoard();bag=[];nextQ=[];held=null;holdUsed=false;pops=[];particles=[];tspinPulse={active:false,age:0,cx:0,cy:0};score=0;lines=0;combo=-1;totalAtk=0;garbQ=0;tspinType='none';clearAnim=null;allClearFlash=0;lockFlash=0;lockImpact=null;comboBanner={val:0,age:0,maxAge:950};b2b=false;b2bCount=0;lockOn=false;lockTimer=0;lockMoves=0;gravAcc=0;softAcc=0;dasL=0;dasR=0;tDasL=0;tDasR=0;touchSoft=false;touchL=false;touchR=false;prevLevel=1;modeTimer=0;garbTimer=0;sprintDone=false;Object.keys(hk).forEach(k=>hk[k]=false);const md=MODES[curMode];level=md.diffFixed?parseInt(document.getElementById('diffSlider').value):1;if(curMode==='survival')level=3;if(curMode==='battle'){initAI();}fillNext();spawnNext();running=true;paused=false;lastTs=performance.now();cancelAnimationFrame(raf);document.getElementById('gearBtn').style.display='block';updateMusicBtn();updateHoldBtn();ac();resize();updateUI();doCountdown(()=>{lastTs=performance.now();raf=requestAnimationFrame(loop);if(bgmEnabled)startBGM();});}
@@ -2473,15 +2589,23 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('cardCancelBtn').style.display='none';
   });
   document.getElementById('stageNextBtn').addEventListener('click',()=>{
-    const showCard=document.getElementById('stageNextBtn').dataset.showCard==='1';
-    document.getElementById('stageResult').classList.add('hidden');
-    if(bm.stage>=42){bossAllClear();return;}
-    const nextStage=bm.stage+1;
-    if(showCard){
-      const reason=bm.isBoss?'擊敗BOSS獎勵':'每5關強化';
-      showCardOverlay(reason,()=>bossStartStage(nextStage));
+    // 魔除所有畫面晃動狀態
+    if(bm.shakeIntervalId){clearInterval(bm.shakeIntervalId);bm.shakeIntervalId=null;}
+    const gw=document.getElementById('gameWrap');if(gw)gw.style.transform='';
+    const sr=document.getElementById('stageResult');
+    sr.classList.remove('active');
+    sr.classList.add('hidden');
+    // 由 bossStageCleared 設置的 _pendingNext 來決定下一步
+    if(typeof bm._pendingNext === 'function'){
+      const fn = bm._pendingNext;
+      bm._pendingNext = null;
+      fn();
     } else {
-      bossStartStage(nextStage);
+      // fallback
+      if(bm.stage>=42){bossAllClear();return;}
+      const nextStage=bm.stage+1;
+      const shouldCard=(bm.stage%5===0)||[6,12,18,24,30,36,42].includes(bm.stage);
+      startNextStageWithPreview(nextStage,shouldCard);
     }
   });
   document.getElementById('beMenuBtn').addEventListener('click',()=>{
