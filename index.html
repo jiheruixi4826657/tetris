@@ -174,43 +174,43 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
 	/* BOSS 狀態右移與超大圖佈局 */
 	#gameWrap { position: relative; }
 	#deskR { display: flex; flex-direction: column; gap: 5px; }
-					#deskRBoss {
-						  position: fixed;
-						  right: 0;
-						  top: 0;
-						  bottom: 0;
-						  width: 380px;
-						  display: none;
-						  flex-direction: column;
-						  gap: 15px;
-						  z-index: 60;
-						  background: linear-gradient(135deg, rgba(15, 0, 25, 0.95), rgba(5, 0, 10, 0.98));
-								  padding: 130px 20px 20px; /* 再下移 30px，總計 130px */
-						  border-left: 2px solid rgba(255, 50, 100, 0.4);
-						  backdrop-filter: blur(15px);
-						  box-shadow: -15px 0 60px rgba(0,0,0,0.9);
-						}
-						#monsterView {
-						  width: 100%;
-							  height: 370px; /* 增加高度以配合加粗的外框 */
+						#deskRBoss {
+							  position: fixed;
+							  right: 0;
+							  top: 0;
+							  bottom: 0;
+							  width: 380px;
+							  display: none;
+							  flex-direction: column;
+							  gap: 15px;
+							  z-index: 60;
+							  background: linear-gradient(135deg, rgba(15, 0, 25, 0.95), rgba(5, 0, 10, 0.98));
+							  padding: 130px 20px 20px;
+							  border-left: 2px solid rgba(255, 50, 100, 0.4);
+							  backdrop-filter: blur(15px);
+							  box-shadow: -15px 0 60px rgba(0,0,0,0.9);
+							}
+							#monsterView {
+							  width: 100%;
+							  height: 370px;
 							  background: radial-gradient(circle, rgba(80,0,120,0.5) 0%, #000 100%);
-							  border: 8px solid rgba(255, 0, 100, 0.7); /* 外框加粗 5px (3px -> 8px) */
-						  border-radius: 20px;
-						  position: relative;
-						  overflow: visible; /* 允許圖案稍微超出容器而不被切掉 */
-						  display: flex;
-						  align-items: center;
-						  justify-content: center;
-						  margin-bottom: 10px;
-						  box-shadow: 0 0 50px rgba(255, 0, 100, 0.4);
-						}
-					#monsterArt {
-					  font-size: 16rem !important; /* 最大化圖片 */
-					  line-height: 1;
-					  text-shadow: 0 0 80px rgba(255, 0, 50, 0.9);
-					  z-index: 5;
-					  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-					}
+							  border: 8px solid rgba(255, 0, 100, 0.7);
+							  border-radius: 20px;
+							  position: relative;
+							  overflow: visible;
+							  display: flex;
+							  align-items: center;
+							  justify-content: center;
+							  margin-bottom: 10px;
+							  box-shadow: 0 0 50px rgba(255, 0, 100, 0.4);
+							}
+							#monsterArt {
+							  font-size: 13rem !important; /* 縮小以進入外框 */
+							  line-height: 1;
+							  text-shadow: 0 0 60px rgba(255, 0, 50, 0.8);
+							  z-index: 5;
+							  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+							}
 				#deskLBossCards {
 				  position: fixed;
 				  left: 10px;
@@ -327,8 +327,8 @@ h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(-
 			  0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; }
 			  100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
 			}
-		@keyframes monsterShake{0%{transform:translate(0,0)}25%{transform:translate(-8px,4px) scale(0.9)}50%{transform:translate(8px,-4px) scale(1.1)}75%{transform:translate(-4px,-8px)}100%{transform:translate(0,0)}}
-		.monster-hit{animation: monsterShake 0.2s ease-in-out !important;}
+			@keyframes monsterShake{0%{transform:translate(0,0)}20%{transform:translate(-12px,6px) scale(0.95) rotate(-3deg)}40%{transform:translate(12px,-6px) scale(1.1) rotate(3deg)}60%{transform:translate(-8px,-10px) scale(1.05)}80%{transform:translate(8px,4px) scale(0.98)}100%{transform:translate(0,0)}}
+			.monster-hit{animation: monsterShake 0.25s cubic-bezier(.36,.07,.19,.97) !important; filter: brightness(2) drop-shadow(0 0 30px #f00) !important;}
 		/* Explosion Particles */
 		.exp-part{
 		  position:fixed;width:6px;height:6px;border-radius:50%;z-index:151;pointer-events:none;
@@ -1001,9 +1001,10 @@ function spawnMissile(startX, startY, type, count) {
 }
 
 function spawnExplosion(x, y, color) {
-  // 擊中爆炸音效
-  osc(60 + Math.random() * 40, 'triangle', 0, 0.08, 0.1);
-  for (let i = 0; i < 8; i++) {
+	  // 強化擊中爆炸音效：重低音 + 隨機高頻碎裂聲
+	  osc(50 + Math.random() * 30, 'square', 0, 0.15, 0.2); // 重低音打擊
+	  osc(800 + Math.random() * 400, 'sawtooth', 0.02, 0.05, 0.1); // 碎裂聲
+	  for (let i = 0; i < 15; i++) { // 增加粒子數量 (8 -> 15)
     const p = document.createElement('div');
     p.className = 'exp-part';
     p.style.left = x + 'px';
@@ -1031,25 +1032,30 @@ function spawnExplosion(x, y, color) {
 }
 
 function triggerMonsterHit(type) {
-  const flash = document.getElementById('monsterHitFlash');
-  if (flash) {
-    flash.classList.remove('hit-flash');
-    void flash.offsetWidth;
-    flash.classList.add('hit-flash');
-  }
-  const art = document.getElementById('monsterArt');
-  if (art) {
-    art.classList.remove('monster-hit');
-    void art.offsetWidth;
-    art.classList.add('monster-hit');
-    
-    // 強力消除時的額外震動
-    if (type === 4 || type === 'T') {
-      triggerShake();
-      vib([30, 15, 30]);
-    }
-  }
-}
+	  const flash = document.getElementById('monsterHitFlash');
+	  if (flash) {
+	    flash.style.background = 'rgba(255, 0, 0, 0.4)'; // 擊中時閃紅光
+	    flash.classList.remove('hit-flash');
+	    void flash.offsetWidth;
+	    flash.classList.add('hit-flash');
+	  }
+	  const art = document.getElementById('monsterArt');
+	  if (art) {
+	    art.classList.remove('monster-hit');
+	    void art.offsetWidth;
+	    art.classList.add('monster-hit');
+	    
+	    // 根據傷害類型強化音效與震動
+	    if (type === 4 || type === 'T') {
+	      osc(40, 'sine', 0, 0.3, 0.4); // 強力重低音
+	      triggerShake();
+	      vib([50, 30, 50]);
+	      showMonsterText('CRITICAL!!', '#f00', 800);
+	    } else {
+	      osc(100 + combo * 50, 'triangle', 0, 0.1, 0.15); // 連擊音效隨 combo 升高
+	    }
+	  }
+	}
 
 // ── 怪物文字跳出效果（獨立於 msgTxt，使用全螢幕大字）──
 function showMonsterText(txt, col, duration){
@@ -2532,10 +2538,10 @@ function resize(){
     if(aiCvs){aiCvs.width=COLS*AI_CELL;aiCvs.height=ROWS*AI_CELL;}
 	  } else if(lay==='desk'){
 	    const topOff=isBoss?'46px':'0';
-	    const rightOff=isBoss?'380px':'0'; // 配合新的 380px 寬度
-	    Object.assign(gw.style,{top:topOff,bottom:'0',left:isBoss?'120px':'0',right:rightOff,alignItems:'center',justifyContent:'center',flexDirection:'row'});
-	    const usableH=H-(isBoss?46:0);
-	    const usableW=W-(isBoss?500:88*2)-24; // 扣除左右面板後的寬度
+			    const rightOff=isBoss?'380px':'0'; // 恢復至 380px
+			    Object.assign(gw.style,{top:topOff,bottom:'0',left:isBoss?'120px':'0',right:rightOff,alignItems:'center',justifyContent:'center',flexDirection:'row'});
+			    const usableH=H-(isBoss?46:0);
+			    const usableW=W-(isBoss?500:88*2)-24; // 恢復至 500 (120+380)
 	    CELL=Math.max(14,Math.min(Math.floor(usableW/COLS),Math.floor((usableH-8)/ROWS),40));
   } else if(lay==='port'){
     const ptop=isBoss?46:PORT_TOP;
