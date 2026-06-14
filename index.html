@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover"><title>俄羅斯方塊</title><script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script><style> *{box-sizing:border-box;margin:0;padding:0}:root{--bg:#090912;--panel:#0d0d1e;--border:#2e2e52;--border-w:rgba(255,255,255,0.18);--c0:#00e8e8;--dim:#555;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);--safe-r:env(safe-area-inset-right,0px);}html,body{height:100%;background:var(--bg);color:#fff;font-family:'Courier New',monospace;touch-action:none;user-select:none;overflow:hidden;-webkit-tap-highlight-color:transparent}.hidden{display:none!important}#startScreen,#goScreen{position:fixed;inset:0;background:#090912 !important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:200;padding:16px;overflow-y:auto}h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(--c0);letter-spacing:5px;margin-bottom:4px}.btn{padding:9px 22px;border:2px solid var(--c0);background:transparent;color:var(--c0);font-size:.95rem;cursor:pointer;border-radius:4px;letter-spacing:2px;transition:background .15s;font-family:inherit;white-space:nowrap}.btn:hover,.btn:active{background:#0ff2}
+<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no"><title>俄羅斯方塊</title><script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script><style> *{box-sizing:border-box;margin:0;padding:0}:root{--bg:#090912;--panel:#0d0d1e;--border:#2e2e52;--border-w:rgba(255,255,255,0.18);--c0:#00e8e8;--dim:#555;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);--safe-r:env(safe-area-inset-right,0px);}html,body{height:100%;background:var(--bg);color:#fff;font-family:'Courier New',monospace;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none;overflow:hidden;-webkit-tap-highlight-color:transparent}.hidden{display:none!important}#startScreen,#goScreen{position:fixed;inset:0;background:#090912 !important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:200;padding:16px;overflow-y:auto}h1{font-size:clamp(1.6rem,7vw,2.8rem);color:var(--c0);text-shadow:0 0 24px var(--c0);letter-spacing:5px;margin-bottom:4px}.btn{padding:9px 22px;border:2px solid var(--c0);background:transparent;color:var(--c0);font-size:.95rem;cursor:pointer;border-radius:4px;letter-spacing:2px;transition:background .15s;font-family:inherit;white-space:nowrap}.btn:hover,.btn:active{background:#0ff2}
     #modeGrid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -2058,6 +2058,28 @@ const hk={};
 let touchSoft=false,touchL=false,touchR=false;
 let dasL=0,dasR=0,tDasL=0,tDasR=0;
 const DAS=150,ARR=25;
+// 手機版防縮放終極攔截
+(function() {
+  let lastTouchEnd = 0;
+  document.addEventListener('touchstart', function(event) {
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
+  }, { passive: false });
+  
+  document.addEventListener('touchend', function(event) {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+  
+  document.addEventListener('gesturestart', function(event) {
+    event.preventDefault();
+  });
+})();
+
 window.addEventListener('keydown',e=>{if(!running||paused||counting)return;if(hk[e.code])return;hk[e.code]=true;if(e.code!=='Space')e.preventDefault();if(isAct('left',e.code)){dasL=0;moveH(-1);}else if(isAct('right',e.code)){dasR=0;moveH(1);}else if(isAct('rotCW',e.code))rotate(1);else if(isAct('rotCCW',e.code))rotate(-1);else if(isAct('hard',e.code)){e.preventDefault();if(!clearAnim)hardDrop();}else if(isAct('hold',e.code))doHold();else if(isAct('pause',e.code))openPause();});
 window.addEventListener('keyup',e=>{hk[e.code]=false;if(KB.left.includes(e.code))dasL=0;if(KB.right.includes(e.code))dasR=0;});
 function handleDAS(dt,dasEff,arrEff){if(clearAnim)return;const D=dasEff||DAS,A=arrEff||ARR;const lh=KB.left.some(k=>hk[k]),rh=KB.right.some(k=>hk[k]);if(lh){dasL+=dt;if(dasL>=D){const n=~~((dasL-D)/A),p=~~((dasL-D-dt)/A);if(n>p)moveH(-1);}}else dasL=0;if(rh){dasR+=dt;if(dasR>=D){const n=~~((dasR-D)/A),p=~~((dasR-D-dt)/A);if(n>p)moveH(1);}}else dasR=0;if(touchL){tDasL+=dt;if(tDasL>=D){const n=~~((tDasL-D)/A),p=~~((tDasL-D-dt)/A);if(n>p)moveH(-1);}}else tDasL=0;if(touchR){tDasR+=dt;if(tDasR>=D){const n=~~((tDasR-D)/A),p=~~((tDasR-D-dt)/A);if(n>p)moveH(1);}}else tDasR=0;}
